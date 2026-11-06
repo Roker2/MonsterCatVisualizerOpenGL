@@ -21,6 +21,13 @@ FetchContent_Declare(
   GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(glfw)
 
+FetchContent_Declare(
+  nanovg
+  GIT_REPOSITORY https://github.com/memononen/nanovg.git)
+FetchContent_MakeAvailable(nanovg)
+add_library(nanovg STATIC ${nanovg_SOURCE_DIR}/src/nanovg.c)
+target_include_directories(nanovg PUBLIC ${nanovg_SOURCE_DIR}/src)
+
 add_executable(MonsterCatVisualizerOpenGL src/main.cpp)
 
 find_package(OpenGL REQUIRED)
@@ -28,4 +35,4 @@ find_package(OpenGL REQUIRED)
 add_library(glad STATIC external/glad/src/gl.c)
 target_include_directories(glad PUBLIC external/glad/include)
 
-target_link_libraries(MonsterCatVisualizerOpenGL PRIVATE MonsterCatVisualizerBase glfw OpenGL::GL glad)
+target_link_libraries(MonsterCatVisualizerOpenGL PRIVATE MonsterCatVisualizerBase glfw OpenGL::GL glad nanovg)
