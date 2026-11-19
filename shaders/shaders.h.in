@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
+namespace monsterCatVisualizerOpenGL::shaders
+{
+
+inline constexpr char particleVertex[] = R"GLSL(@PARTICLE_VERT@)GLSL";
+inline constexpr char particleFragment[] = R"GLSL(@PARTICLE_FRAG@)GLSL";
+
+} // namespace monsterCatVisualizerOpenGL::shaders
