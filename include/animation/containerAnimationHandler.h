@@ -22,10 +22,14 @@ template <typename T, typename U>
 class ContainerAnimationHandler : public BaseAnimationHandler
 {
 public:
-    using Storage = monsterCatVisualizer::models::Container<T>;
+    using DataModel = T;
+    using DataModelGpu = U;
+
+    using SourceGenerationDescriptor = typename DataModel::GenerationDescriptor;
+    using Storage = monsterCatVisualizer::models::Container<DataModel>;
     using PatchStorage = typename Storage::PatchStorage;
     using StoragePtr = std::shared_ptr<Storage>;
-    using StorageGpu = std::vector<U>;
+    using StorageGpu = std::vector<DataModelGpu>;
 
     StoragePtr getStorage() const
     {
@@ -87,14 +91,14 @@ protected:
             throw std::runtime_error("ContainerAnimationHandler: empty storage");
 
         const bool elementsDensityValid = std::isfinite(elementsDensity) &&
-            elementsDensity > T::elementsDensityMin;
+            elementsDensity > SourceGenerationDescriptor::elementsDensityMin;
         if (!elementsDensityValid)
             throw std::runtime_error("ContainerAnimationHandler: invalid elementsDensity");
     }
 
     void setInitialData()
     {
-        std::vector<T> initialData;
+        std::vector<DataModel> initialData;
         m_storagePtr->getInitialData(initialData);
         m_lastPatch.reset();
 
@@ -123,7 +127,7 @@ protected:
         return true;
     }
 
-    void appendElements(const std::vector<T>& appended)
+    void appendElements(const std::vector<DataModel>& appended)
     {
         const auto oldSize = m_storageGpu.size();
         m_storageGpu.resize(oldSize + appended.size());
@@ -132,7 +136,7 @@ protected:
             appended.begin(),
             appended.end(),
             m_storageGpu.begin() + oldSize,
-            U::convert);
+            DataModelGpu::convert);
     }
 
     StoragePtr m_storagePtr;

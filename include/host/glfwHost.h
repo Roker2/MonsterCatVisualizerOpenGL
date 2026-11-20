@@ -9,6 +9,8 @@
 
 #include "utils/animationClock.h"
 #include "utils/viewportState.h"
+#include "animation/animationOrchestrator.h"
+#include "animation/animationHandlerOrchestrator.h"
 
 struct GLFWwindow;
 
@@ -20,11 +22,18 @@ namespace monsterCatVisualizerOpenGL::host
 class GlfwHost
 {
 public:
+    using TaskScheduler = monsterCatVisualizer::utils::TaskScheduler;
+    using TaskSchedulerPtr = std::shared_ptr<TaskScheduler>;
     using AnimationClock = monsterCatVisualizer::utils::AnimationClock;
     using AnimationClockPtr = std::shared_ptr<AnimationClock>;
     using ViewportState = monsterCatVisualizer::utils::ViewportState;
     using ViewportSize = ViewportState::ViewportSize;
     using ViewportStatePtr = std::shared_ptr<ViewportState>;
+
+    using AnimationOrchestrator = monsterCatVisualizer::animation::AnimationOrchestrator;
+    using AnimationOrchestratorPtr = std::unique_ptr<AnimationOrchestrator>;
+    using AnimationHandlerOrchestrator = animation::AnimationHandlerOrchestrator;
+    using AnimationHandlerOrchestratorPtr = std::unique_ptr<AnimationHandlerOrchestrator>;
 
     GlfwHost() = default;
     ~GlfwHost();
@@ -39,6 +48,7 @@ private:
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
     void initializeLogic();
+    void deinitializeLogic();
 
     void initializeGLFW();
     void deinitializeGLFW();
@@ -55,8 +65,12 @@ private:
     std::atomic<bool> m_stop{false};
     std::exception_ptr m_renderError;
 
+    TaskSchedulerPtr m_taskScheduler;
     AnimationClockPtr m_animationClock;
     ViewportStatePtr m_viewportState;
+
+    AnimationOrchestratorPtr m_animationOrchestrator;
+    AnimationHandlerOrchestratorPtr m_animationHandlerOrchestrator;
 };
 
 } // namespace monsterCatVisualizerOpenGL::host

@@ -11,6 +11,7 @@
 #include <stdexcept>
 
 #include "utils/mathUtils.h"
+#include "utils/animationFactory.h"
 #include "rendering/openGLRenderer.h"
 
 namespace
@@ -31,6 +32,7 @@ namespace monsterCatVisualizerOpenGL::host
 
 GlfwHost::~GlfwHost()
 {
+    deinitializeLogic();
     deinitializeRendering();
     deinitializeGLFW();
 }
@@ -47,6 +49,7 @@ int GlfwHost::run()
         glfwWaitEventsTimeout(pollEventsTimeoutSeconds);
     }
 
+    deinitializeLogic();
     deinitializeRendering();
 
     if (m_renderError)
@@ -57,8 +60,26 @@ int GlfwHost::run()
 
 void GlfwHost::initializeLogic()
 {
+    m_taskScheduler = std::make_shared<TaskScheduler>();
     m_animationClock = std::make_shared<AnimationClock>();
     m_viewportState = std::make_shared<ViewportState>();
+
+    m_animationOrchestrator = std::make_unique<AnimationOrchestrator>(
+        m_taskScheduler, m_animationClock, m_viewportState);
+    m_animationHandlerOrchestrator = std::make_unique<AnimationHandlerOrchestrator>(
+        m_taskScheduler, m_animationClock, m_viewportState);
+
+    // TODO: fill in from factory
+}
+
+void GlfwHost::deinitializeLogic()
+{
+    m_animationOrchestrator.reset();
+    m_animationHandlerOrchestrator.reset();
+
+    m_taskScheduler.reset();
+    m_animationClock.reset();
+    m_viewportState.reset();
 }
 
 void GlfwHost::initializeGLFW()
