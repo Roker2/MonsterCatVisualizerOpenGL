@@ -68,6 +68,12 @@ void VertexBuffer::allocate(GLsizeiptr sizeBytes, GLenum usage, const void* data
     m_sizeBytes = sizeBytes;
 }
 
+void VertexBuffer::clear()
+{
+    bind();
+    glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_STATIC_DRAW);
+}
+
 void VertexBuffer::update(GLintptr offsetBytes, GLsizeiptr sizeBytes, const void* data)
 {
     if (offsetBytes < 0 || sizeBytes < 0 ||

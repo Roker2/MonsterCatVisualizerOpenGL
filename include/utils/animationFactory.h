@@ -2,15 +2,16 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <tuple>
 
 #include "animation/cloudsAnimator.h"
-// #include "animation/cloudsAnimationHandler.h"
+// #include "rendering/cloudRenderObject.h"
 #include "animation/linesAnimator.h"
-// #include "animation/linesAnimationHandler.h"
+// #include "rendering/lineRenderObject.h"
 #include "animation/particlesAnimator.h"
-#include "animation/particleAnimationHandler.h"
+#include "rendering/particleRenderObject.h"
 
 namespace monsterCatVisualizerOpenGL::utils
 {
@@ -23,23 +24,31 @@ struct AnimationFactory
     using ColorRGB = monsterCatVisualizer::primitives::ColorRGB<>;
     using ColorRGBA = monsterCatVisualizer::primitives::ColorRGBA<>;
 
+    using BaseAnimator = monsterCatVisualizer::animation::BaseAnimator;
+    using BaseAnimatorPtr = std::shared_ptr<BaseAnimator>;
+    using BaseRenderObject = rendering::BaseRenderObject;
+    using BaseRenderObjectPtr = std::unique_ptr<BaseRenderObject>;
+
+    using AnimatorCreationFunc = std::function<BaseAnimatorPtr()>;
+    using RenderObjectCreationFunc = std::function<BaseRenderObjectPtr()>;
+
     template <typename Desc>
     struct AnimationFactoryDescriptor
     {
         using Animator = typename Desc::Animator;
-        using AnimationHandler = typename Desc::AnimationHandler;
+        using RenderObject = typename Desc::RenderObject;
 
-        using DataModel = typename AnimationHandler::DataModel;
-        using DataModelGpu = typename AnimationHandler::DataModelGpu;
+        using DataModel = typename RenderObject::DataModel;
+        using DataModelGpu = typename RenderObject::DataModelGpu;
 
-        using Storage = typename AnimationHandler::Storage;
-        using StoragePtr = typename AnimationHandler::StoragePtr;
+        using Storage = typename RenderObject::Storage;
+        using StoragePtr = typename RenderObject::StoragePtr;
     };
 
     struct CloudsDescriptor
     {
         using Animator = monsterCatVisualizer::animation::CloudsAnimator;
-        using AnimationHandler = void;
+        using RenderObject = void;
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
@@ -56,12 +65,13 @@ struct AnimationFactory
 
         static constexpr auto defaultAnimatorArgs = std::make_tuple(
             ColorRGB{180u, 180u, 180u});
+        static constexpr double updateIntervalSeconds = 0.5;
     };
 
     struct LinesDescriptor
     {
         using Animator = monsterCatVisualizer::animation::LinesAnimator;
-        using AnimationHandler = void;
+        using RenderObject = void;
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
@@ -77,12 +87,13 @@ struct AnimationFactory
         };
 
         static constexpr auto defaultAnimatorArgs = std::make_tuple();
+        static constexpr double updateIntervalSeconds = 0.1;
     };
 
     struct ParticlesDescriptor
     {
         using Animator = monsterCatVisualizer::animation::ParticlesAnimator;
-        using AnimationHandler = monsterCatVisualizerOpenGL::animation::ParticleAnimationHandler;
+        using RenderObject = monsterCatVisualizerOpenGL::rendering::ParticleRenderObject;
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
@@ -97,12 +108,17 @@ struct AnimationFactory
         };
 
         static constexpr auto defaultAnimatorArgs = std::make_tuple();
+        static constexpr double updateIntervalSeconds = 0.1;
     };
 
-    template <typename Desc, typename Source>
+    template <typename Desc, typename Source = decltype(Desc::source)>
     static auto createDefault(const Source& source = Desc::source)
     {
-        return std::apply(create<Desc, Source, decltype(Desc::defaultAnimatorArgs)>,
+        return std::apply(
+            [&source](auto&&... args)
+            {
+                return create<Desc>(source, std::forward<decltype(args)>(args)...);
+            },
             Desc::defaultAnimatorArgs);
     }
 
@@ -112,13 +128,21 @@ struct AnimationFactory
         using FactoryDescriptor = AnimationFactoryDescriptor<Desc>;
         auto storage = std::make_shared<typename FactoryDescriptor::Storage>();
 
-        auto animator = std::make_shared<Desc::Animator>(
-            std::forward<Args>(animatorArgs)...,
-            storage, source);
-        auto animationHandler = std::make_shared<Desc::AnimationHandler>(
-            storage, source.elementsDensity);
+        AnimatorCreationFunc animatorCreationFunc =
+            [animatorArgs..., storage, source]() mutable
+        {
+            return std::make_shared<Desc::Animator>(
+                std::forward<Args>(animatorArgs)...,
+                storage, source);
+        };
+        RenderObjectCreationFunc renderObjectCreationFunc =
+            [storage, elementsDensity = source.elementsDensity]()
+        {
+            return std::make_unique<Desc::RenderObject>(
+                storage, elementsDensity);
+        };
 
-        return std::make_pair(animator, animationHandler);
+        return std::make_tuple(animatorCreationFunc, renderObjectCreationFunc);
     }
 };
 

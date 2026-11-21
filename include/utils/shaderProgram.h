@@ -17,8 +17,7 @@ namespace monsterCatVisualizerOpenGL::utils
 class ShaderProgram
 {
 public:
-    ShaderProgram(
-        std::string_view vertexSource,
+    ShaderProgram(std::string_view vertexSource,
         std::string_view fragmentSource);
 
     ShaderProgram(const ShaderProgram&) = delete;

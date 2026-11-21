@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include "utils/mathUtils.h"
-#include "utils/animationFactory.h"
 #include "rendering/openGLRenderer.h"
 
 namespace
@@ -25,6 +24,18 @@ void errorCallback(int error, const char* description)
     std::cerr << "GLFW error: " << error << ": " << description << std::endl;
 }
 
+template <typename Desc, typename AnimationOrchestrator, typename RenderObjectCreationStorage>
+void createDefault(AnimationOrchestrator& animationOrchestrator, RenderObjectCreationStorage& renderObjectCreationStorage)
+{
+    using AnimationFactory = monsterCatVisualizerOpenGL::utils::AnimationFactory;
+
+    auto [animatorCreationFunc, renderObjectCreationFunc] =
+        AnimationFactory::createDefault<Desc>();
+
+    animationOrchestrator.addAnimator(animatorCreationFunc(), Desc::updateIntervalSeconds);
+    renderObjectCreationStorage.emplace_back(std::move(renderObjectCreationFunc));
+}
+
 } // namespace
 
 namespace monsterCatVisualizerOpenGL::host
@@ -32,15 +43,17 @@ namespace monsterCatVisualizerOpenGL::host
 
 GlfwHost::~GlfwHost()
 {
-    deinitializeLogic();
+    deinitializeAnimation();
     deinitializeRendering();
     deinitializeGLFW();
+    deinitializeBasicModels();
 }
 
 int GlfwHost::run()
 {
-    initializeLogic();
+    initializeBasicModels();
     initializeGLFW();
+    initializeAnimation();
     initializeRendering();
 
     while (!glfwWindowShouldClose(m_window) && !m_stop.load(std::memory_order_relaxed))
@@ -49,8 +62,8 @@ int GlfwHost::run()
         glfwWaitEventsTimeout(pollEventsTimeoutSeconds);
     }
 
-    deinitializeLogic();
     deinitializeRendering();
+    deinitializeAnimation();
 
     if (m_renderError)
         std::rethrow_exception(m_renderError);
@@ -58,25 +71,15 @@ int GlfwHost::run()
     return 0;
 }
 
-void GlfwHost::initializeLogic()
+void GlfwHost::initializeBasicModels()
 {
     m_taskScheduler = std::make_shared<TaskScheduler>();
     m_animationClock = std::make_shared<AnimationClock>();
     m_viewportState = std::make_shared<ViewportState>();
-
-    m_animationOrchestrator = std::make_unique<AnimationOrchestrator>(
-        m_taskScheduler, m_animationClock, m_viewportState);
-    m_animationHandlerOrchestrator = std::make_unique<AnimationHandlerOrchestrator>(
-        m_taskScheduler, m_animationClock, m_viewportState);
-
-    // TODO: fill in from factory
 }
 
-void GlfwHost::deinitializeLogic()
+void GlfwHost::deinitializeBasicModels()
 {
-    m_animationOrchestrator.reset();
-    m_animationHandlerOrchestrator.reset();
-
     m_taskScheduler.reset();
     m_animationClock.reset();
     m_viewportState.reset();
@@ -116,6 +119,20 @@ void GlfwHost::deinitializeGLFW()
 
     if (m_glfwInitialized)
         glfwTerminate();
+}
+
+void GlfwHost::initializeAnimation()
+{
+    m_animationOrchestrator = std::make_unique<AnimationOrchestrator>(
+        m_taskScheduler, m_animationClock, m_viewportState);
+
+    createDefault<utils::AnimationFactory::ParticlesDescriptor>(
+        *m_animationOrchestrator, m_renderObjectCreationStorage);
+}
+
+void GlfwHost::deinitializeAnimation()
+{
+    m_animationOrchestrator.reset();
 }
 
 void GlfwHost::initializeRendering()
@@ -168,6 +185,14 @@ void GlfwHost::renderLoop() noexcept
         {
             rendering::OpenGLRenderer renderer;
             renderer.initialize();
+
+            // currently m_renderObjectCreationStorage is designed to be read only once
+            // without any synchronization on the rendering thread
+            for (const auto& renderObjectCreationFunc : m_renderObjectCreationStorage)
+            {
+                renderer.addRenderObject(renderObjectCreationFunc());
+            }
+            m_renderObjectCreationStorage.clear();
 
             ViewportSize previousSize{-1, -1};
 

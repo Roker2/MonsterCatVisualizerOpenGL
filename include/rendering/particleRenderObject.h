@@ -2,41 +2,44 @@
 
 #pragma once
 
-#include <vector>
+#include <cstdint>
 
-#include <glad/gl.h>
-
-#include "utils/shaderProgram.h"
-#include "utils/vertexArray.h"
-#include "utils/vertexBuffer.h"
 #include "models/particleGpu.h"
-#include "rendering/iRenderObject.h"
+#include "rendering/baseRenderObject.h"
+#include "rendering/renderContainerHandler.h"
+#include "rendering/renderVisualHandler.h"
 
 namespace monsterCatVisualizerOpenGL::rendering
 {
 
-class ParticleRenderObject final : public IRenderObject
+class ParticleRenderObject final : public BaseRenderObject
 {
 public:
+    using DataModel = monsterCatVisualizer::models::Particle;
+    using DataModelGpu = models::ParticleGpu;
+    using ContainerHandler = RenderContainerHandler<
+        DataModel, DataModelGpu>;
+    using Storage = ContainerHandler::Storage;
+    using StoragePtr = ContainerHandler::StoragePtr;
+    using VisualHandler = RenderVisualHandler<DataModelGpu>;
+
     static constexpr char uniformTime[] = "uTime";
     static constexpr char uniformViewportRatio[] = "uViewportRatio";
 
-    // Construct and destroy only on a thread with a current OpenGL context.
-    ParticleRenderObject();
+    /** Construct and destroy only on a thread with a current OpenGL context. */
+    ParticleRenderObject(StoragePtr storagePtr, float elementsDensity);
 
-    void initialize() override;
+    using BaseRenderObject::initialize;
+
     void synchronize() override;
+    void clear() override;
     void render(const RenderFrameContext& frame) override;
 
-    // Render-thread-only MVP upload; later replaced by published snapshots.
-    void setParticles(const std::vector<models::ParticleGpu>& particles);
-
 private:
-    utils::ShaderProgram m_shaderProgram;
-    utils::VertexBuffer m_vertexBuffer;
-    utils::VertexArray m_vertexArray;
-    GLsizei m_particleCount{};
-    bool m_initialized{};
+    void initializeInternal(std::size_t desiredCount) override;
+
+    ContainerHandler m_containerHandler;
+    VisualHandler m_visualHandler;
 };
 
 } // namespace monsterCatVisualizerOpenGL::rendering

@@ -27,7 +27,10 @@ public:
 
     /** Allocate/replace the entire GPU data store. Data may be null. */
     void allocate(GLsizeiptr sizeBytes, GLenum usage = GL_DYNAMIC_DRAW,
-                  const void* data = nullptr);
+        const void* data = nullptr);
+    
+    /** Clear the entire GPU data store. Doesn't delete buffer itself. */
+    void clear();
 
     /** Update a byte range without reallocating the data store. */
     void update(GLintptr offsetBytes, GLsizeiptr sizeBytes, const void* data);

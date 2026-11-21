@@ -7,7 +7,9 @@
 namespace monsterCatVisualizerOpenGL::rendering
 {
 
-// Immutable parameters shared by all render objects in one frame.
+/**
+ * Immutable parameters shared by all render objects in one frame.
+ */
 struct RenderFrameContext
 {
     double timeSeconds{};

@@ -9,16 +9,18 @@
 
 #include "utils/animationClock.h"
 #include "utils/viewportState.h"
+#include "utils/animationFactory.h"
 #include "animation/animationOrchestrator.h"
-#include "animation/animationHandlerOrchestrator.h"
 
 struct GLFWwindow;
 
 namespace monsterCatVisualizerOpenGL::host
 {
 
-// Owns the GLFW window and a dedicated OpenGL rendering thread.
-// Construct, run and destroy on the main thread.
+/**
+ * Owns the GLFW window and a dedicated OpenGL rendering thread.
+ * Construct, run and destroy on the main thread.
+ */
 class GlfwHost
 {
 public:
@@ -32,8 +34,8 @@ public:
 
     using AnimationOrchestrator = monsterCatVisualizer::animation::AnimationOrchestrator;
     using AnimationOrchestratorPtr = std::unique_ptr<AnimationOrchestrator>;
-    using AnimationHandlerOrchestrator = animation::AnimationHandlerOrchestrator;
-    using AnimationHandlerOrchestratorPtr = std::unique_ptr<AnimationHandlerOrchestrator>;
+    using RenderObjectCreationFunc = utils::AnimationFactory::RenderObjectCreationFunc;
+    using RenderObjectCreationStorage = std::vector<RenderObjectCreationFunc>;
 
     GlfwHost() = default;
     ~GlfwHost();
@@ -47,11 +49,14 @@ private:
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-    void initializeLogic();
-    void deinitializeLogic();
+    void initializeBasicModels();
+    void deinitializeBasicModels();
 
     void initializeGLFW();
     void deinitializeGLFW();
+
+    void initializeAnimation();
+    void deinitializeAnimation();
 
     void initializeRendering();
     void deinitializeRendering();
@@ -70,7 +75,7 @@ private:
     ViewportStatePtr m_viewportState;
 
     AnimationOrchestratorPtr m_animationOrchestrator;
-    AnimationHandlerOrchestratorPtr m_animationHandlerOrchestrator;
+    RenderObjectCreationStorage m_renderObjectCreationStorage;
 };
 
 } // namespace monsterCatVisualizerOpenGL::host

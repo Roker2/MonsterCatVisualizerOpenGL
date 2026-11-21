@@ -10,8 +10,7 @@
 namespace monsterCatVisualizerOpenGL::utils
 {
 
-ShaderProgram::ShaderProgram(
-    std::string_view vertexSource,
+ShaderProgram::ShaderProgram(std::string_view vertexSource,
     std::string_view fragmentSource)
 {
     std::string error;

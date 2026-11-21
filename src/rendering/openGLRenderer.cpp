@@ -51,15 +51,14 @@ void OpenGLRenderer::initialize()
     glDisable(GL_BLEND);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glPointSize(1.0f);
-
-    auto particles = std::make_unique<ParticleRenderObject>();
-    ParticleRenderObject* demo = particles.get();
-    addRenderObject(std::move(particles));
-    demo->setParticles(makeDemoParticles()); // TODO: Replace with AnimationHandler snapshots.
 }
 
 void OpenGLRenderer::resize(std::int32_t viewportWidth, std::int32_t viewportHeight)
 {
+    for (const auto& object : m_renderObjects)
+        if (!object->isInitialized())
+            object->initialize(viewportWidth, viewportHeight);
+
     glViewport(0, 0, viewportWidth, viewportHeight);
 }
 
@@ -73,13 +72,17 @@ void OpenGLRenderer::render(const RenderFrameContext& frame)
     }
 }
 
-void OpenGLRenderer::addRenderObject(std::unique_ptr<IRenderObject> renderObject)
+void OpenGLRenderer::addRenderObject(std::unique_ptr<BaseRenderObject>&& renderObject)
 {
     if (!renderObject)
         throw std::invalid_argument("OpenGLRenderer: empty render object");
 
-    renderObject->initialize();
     m_renderObjects.push_back(std::move(renderObject));
+}
+
+void OpenGLRenderer::removeAllRenderObjects()
+{
+    m_renderObjects.clear();
 }
 
 } // namespace monsterCatVisualizerOpenGL::rendering

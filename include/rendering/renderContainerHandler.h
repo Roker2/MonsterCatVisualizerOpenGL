@@ -3,7 +3,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -11,25 +10,29 @@
 #include <utility>
 #include <vector>
 
-#include "animation/baseAnimationHandler.h"
-#include "utils/mathUtils.h"
 #include "models/container.h"
 
-namespace monsterCatVisualizerOpenGL::animation
+namespace monsterCatVisualizerOpenGL::rendering
 {
 
 template <typename T, typename U>
-class ContainerAnimationHandler : public BaseAnimationHandler
+class RenderContainerHandler
 {
 public:
     using DataModel = T;
     using DataModelGpu = U;
 
-    using SourceGenerationDescriptor = typename DataModel::GenerationDescriptor;
     using Storage = monsterCatVisualizer::models::Container<DataModel>;
     using PatchStorage = typename Storage::PatchStorage;
     using StoragePtr = std::shared_ptr<Storage>;
     using StorageGpu = std::vector<DataModelGpu>;
+
+    RenderContainerHandler(StoragePtr storagePtr)
+        : m_storagePtr(std::move(storagePtr))
+    {
+        if (!m_storagePtr)
+            throw std::runtime_error("RenderContainerHandler: empty storage");
+    }
 
     StoragePtr getStorage() const
     {
@@ -44,58 +47,36 @@ public:
         return m_lastPatch;
     }
 
-    using BaseAnimationHandler::initialize;
-
-    void initialize(std::size_t desiredCount) override
+    void initialize(std::size_t desiredCount)
     {
         m_storageGpu.reserve(desiredCount);
         Storage::reservePatch(desiredCount, m_lastPatch);
-
-        setInitialData();
-    }
-
-    void clear() override
-    {
-        m_storageGpu.clear();
     }
 
     /**
-     * An update is not atomic across the patch check, removal, and append.
-     * Intended for one producer and one consumer.
-     * No other thread may mutate this storage while the producer is updating it.
+     * Synchronize rendering state with animation state.
+     * @return true if there are some changes.
      */
-    void handleUpdate() override
+    bool synchronize()
     {
         if (!m_storagePtr->hasPatch())
-            return;
+            return false;
 
         m_storagePtr->acquirePatch(m_lastPatch);
 
         if (!applyPatch(m_lastPatch))
             setInitialData();
+
+        return true;
     }
 
-    std::size_t calculateDesiredCount(std::int32_t viewportWidth,
-        std::int32_t viewportHeight) const override
+    void clear()
     {
-        return monsterCatVisualizer::utils::SpatialMathUtils::calculateDesiredCount(
-            m_elementsDensity, viewportWidth, viewportHeight);
+        m_storageGpu.clear();
+        m_lastPatch.reset();
     }
 
-protected:
-    ContainerAnimationHandler(StoragePtr storagePtr, float elementsDensity)
-        : m_storagePtr(std::move(storagePtr)),
-          m_elementsDensity(elementsDensity)
-    {
-        if (!m_storagePtr)
-            throw std::runtime_error("ContainerAnimationHandler: empty storage");
-
-        const bool elementsDensityValid = std::isfinite(elementsDensity) &&
-            elementsDensity > SourceGenerationDescriptor::elementsDensityMin;
-        if (!elementsDensityValid)
-            throw std::runtime_error("ContainerAnimationHandler: invalid elementsDensity");
-    }
-
+private:
     void setInitialData()
     {
         std::vector<DataModel> initialData;
@@ -111,7 +92,7 @@ protected:
     {
         if (patch.clearFlag)
         {
-            m_storageGpu.clear();
+            clear();
         }
         else
         {
@@ -142,7 +123,6 @@ protected:
     StoragePtr m_storagePtr;
     StorageGpu m_storageGpu;
     PatchStorage m_lastPatch{};
-    float m_elementsDensity{};
 };
 
-} // namespace monsterCatVisualizerOpenGL::animation
+} // namespace monsterCatVisualizerOpenGL::rendering
