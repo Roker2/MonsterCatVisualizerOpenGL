@@ -150,15 +150,16 @@ GlfwHost::RenderObjectCreationStorage GlfwHost::initializeAnimation()
         m_taskScheduler, m_animationClock, m_viewportState);
 
     RenderObjectCreationStorage renderObjectCreationStorage;
-    createDefault<utils::AnimationFactory::ParticlesDescriptor>(
-        *m_animationOrchestrator, renderObjectCreationStorage);
-    createDefault<utils::AnimationFactory::LinesDescriptor>(
-        *m_animationOrchestrator, renderObjectCreationStorage);
 
     auto themeColorState = std::make_shared<monsterCatVisualizer::utils::ThemeColorState>();
     themeColorState->setColor(defaultCloudThemeColor);
     create<utils::AnimationFactory::CloudsDescriptor>(
         *m_animationOrchestrator, renderObjectCreationStorage, std::move(themeColorState));
+
+    createDefault<utils::AnimationFactory::LinesDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage);
+    createDefault<utils::AnimationFactory::ParticlesDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage);
 
     return renderObjectCreationStorage;
 }

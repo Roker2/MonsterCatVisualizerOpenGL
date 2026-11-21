@@ -9,7 +9,11 @@ layout(location = 5) in vec4 aColorRGBA;
 layout(location = 6) in int aIsThemeColored;
 
 out vec4 fragColorRGBA;
+out vec2 fragTexCoord;
 flat out int fragIsThemeColored;
+flat out vec2 fragNoiseOffset;
+flat out vec2 fragCloudVelocityUV;
+flat out float fragAge;
 
 uniform float uTime;
 uniform float uViewportRatio;
@@ -33,36 +37,64 @@ vec2 convertNVStoNDC(vec2 position)
     return position * 2.0 - 1.0;
 }
 
+vec2 convertNVSToNSS(vec2 position)
+{
+    if (uViewportRatio >= 1.0)
+        return vec2(position.x, position.y / uViewportRatio);
+
+    return vec2(position.x * uViewportRatio, position.y);
+}
+
 vec2 convertNSSToNVS(vec2 position)
 {
-    if (uViewportRatio >= 1.0f)
+    if (uViewportRatio >= 1.0)
         return vec2(position.x, position.y * uViewportRatio);
+
     return vec2(position.x / uViewportRatio, position.y);
 }
 
-vec2 calculatePositionNVS()
+vec2 calculateDirectionNVS()
 {
     vec2 directionNVS = convertNSSToNVS(aDirection);
-    directionNVS = normalize(directionNVS);
+    return normalize(directionNVS);
+}
 
+vec2 calculatePositionNVS(vec2 directionNVS)
+{
     float offsetMultiplier = aSpeed * (uTime - aStartTime);
     vec2 offset = directionNVS * offsetMultiplier;
 
     return aStartPosition + offset;
 }
 
-vec2 calculateCornerOffset()
+vec2 calculateCornerOffsetNVS()
 {
     vec2 corner = corners[gl_VertexID];
     return convertNSSToNVS(corner * aRadius);
 }
 
+vec2 calculateCloudVelocityUV(vec2 directionNVS)
+{
+    vec2 velocityNSS = convertNVSToNSS(directionNVS * aSpeed);
+
+    // Convert velocity from NSS units to local UV units per second.
+    return velocityNSS / (2.0 * aRadius);
+}
+
 void main()
 {
-    vec2 cornerOffsetNVS = calculateCornerOffset();
-    vec2 positionNVS = calculatePositionNVS();
+    vec2 directionNVS = calculateDirectionNVS();
+    vec2 positionNVS = calculatePositionNVS(directionNVS);
+    vec2 cornerOffsetNVS = calculateCornerOffsetNVS();
     vec2 positionNDC = convertNVStoNDC(positionNVS + cornerOffsetNVS);
+
     gl_Position = vec4(positionNDC, 0.0, 1.0);
+
     fragColorRGBA = aColorRGBA;
+    fragTexCoord = texCoords[gl_VertexID];
     fragIsThemeColored = aIsThemeColored;
+
+    fragNoiseOffset = aStartPosition * 41.0 + aDirection * 13.0;
+    fragCloudVelocityUV = calculateCloudVelocityUV(directionNVS);
+    fragAge = uTime - aStartTime;
 }

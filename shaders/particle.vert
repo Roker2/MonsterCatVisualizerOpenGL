@@ -54,5 +54,6 @@ void main()
     vec2 positionNVS = calculatePositionNVS();
     vec2 positionNDC = convertNVStoNDC(positionNVS + cornerOffsetNVS);
     gl_Position = vec4(positionNDC, 0.0, 1.0);
+
     fragColorRGBA = aColorRGBA;
 }

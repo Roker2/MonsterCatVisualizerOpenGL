@@ -53,9 +53,9 @@ struct AnimationFactory
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
-            20.0f, // elementsDensity
-            MinMax<float>{0.00025f, 0.002f}, // speed
-            MinMax<float>{0.01f, 0.1f}, // radius
+            12.0f, // elementsDensity
+            MinMax<float>{0.0005f, 0.005f}, // speed
+            MinMax<float>{0.05f, 0.2f}, // radius
             MinMax<ColorRGBA> // color
             {
                 ColorRGBA{168u, 168u, 168u, 0.25f},
@@ -108,6 +108,10 @@ struct AnimationFactory
         static constexpr double updateIntervalSeconds = 0.1;
     };
 
+    /**
+     * Creation functions must be invoked exactly once.
+     * @return two functors: create animator, create render object
+     */
     template <typename Desc, typename Source = decltype(Desc::source)>
     static auto createDefault(const Source& source = Desc::source)
     {
@@ -130,6 +134,10 @@ struct AnimationFactory
         return std::make_tuple(animatorCreationFunc, renderObjectCreationFunc);
     }
 
+    /**
+     * Creation functions must be invoked exactly once.
+     * @return two functors: create animator, create render object
+     */
     template <typename Desc, typename Source, typename... Args>
     static auto create(const Source& source, Args&&... customArgs)
     {
