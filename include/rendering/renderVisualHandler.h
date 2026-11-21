@@ -43,7 +43,6 @@ public:
     {
     }
 
-    // TODO: mind return value types for getSmth methods
     GLsizei getRenderedCount() const noexcept
     {
         return m_renderedCount;
@@ -93,7 +92,7 @@ public:
     }
 
     template <typename... Args>
-    void render(Args&&... uniformPairs)
+    void prepareRendering(Args&&... uniformPairs)
     {
         if (m_renderedCount == 0)
             return;
@@ -101,7 +100,6 @@ public:
         m_shaderProgram.bind();
         (setUniform(uniformPairs), ...);
         m_vertexArray.bind();
-        glDrawArrays(GL_POINTS, 0, m_renderedCount);
     }
 
     template <typename U>

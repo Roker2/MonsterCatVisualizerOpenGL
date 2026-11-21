@@ -12,6 +12,13 @@ out vec4 fragColorRGBA;
 uniform float uTime;
 uniform float uViewportRatio;
 
+const vec2 corners[4] = vec2[4](
+    vec2(-1.0, -1.0),
+    vec2( 1.0, -1.0),
+    vec2(-1.0,  1.0),
+    vec2( 1.0,  1.0)
+);
+
 vec2 convertNVStoNDC(vec2 position)
 {
     return position * 2.0 - 1.0;
@@ -35,10 +42,17 @@ vec2 calculatePositionNVS()
     return aStartPosition + offset;
 }
 
+vec2 calculateCornerOffset()
+{
+    vec2 corner = corners[gl_VertexID];
+    return convertNSSToNVS(corner * aRadius);
+}
+
 void main()
 {
+    vec2 cornerOffsetNVS = calculateCornerOffset();
     vec2 positionNVS = calculatePositionNVS();
-    vec2 positionNDC = convertNVStoNDC(positionNVS);
+    vec2 positionNDC = convertNVStoNDC(positionNVS + cornerOffsetNVS);
     gl_Position = vec4(positionNDC, 0.0, 1.0);
     fragColorRGBA = aColorRGBA;
 }

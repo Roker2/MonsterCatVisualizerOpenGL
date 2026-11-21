@@ -39,9 +39,10 @@ void ParticleRenderObject::render(const RenderFrameContext& frame)
     if (!isInitialized())
         return;
 
-    m_visualHandler.render(
+    m_visualHandler.prepareRendering(
         VisualHandler::UniformPair<GLfloat>{uniformTime, static_cast<GLfloat>(frame.timeSeconds)},
         VisualHandler::UniformPair<GLfloat>{uniformViewportRatio, frame.viewportRatio});
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_visualHandler.getRenderedCount());
 }
 
 void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
@@ -57,22 +58,22 @@ void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
     const std::vector<utils::VertexAttribute> attributes
     {
         {
-            0, 2, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startPosition)
+            0, 2, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startPosition), 1
         },
         {
-            1, 2, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, direction)
+            1, 2, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, direction), 1
         },
         {
-            2, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, speed)
+            2, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, speed), 1
         },
         {
-            3, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startTime)
+            3, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startTime), 1
         },
         {
-            4, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, radius)
+            4, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, radius), 1
         },
         {
-            5, 4, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, colorRGBA)
+            5, 4, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, colorRGBA), 1
         }
     };
 

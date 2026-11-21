@@ -16,6 +16,7 @@
 namespace monsterCatVisualizerOpenGL::utils
 {
 
+/** It could be the rainbow factory */
 struct AnimationFactory
 {
     template <typename T>
