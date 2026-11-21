@@ -9,7 +9,7 @@
 #include "animation/cloudsAnimator.h"
 // #include "rendering/cloudRenderObject.h"
 #include "animation/linesAnimator.h"
-// #include "rendering/lineRenderObject.h"
+#include "rendering/lineRenderObject.h"
 #include "animation/particlesAnimator.h"
 #include "rendering/particleRenderObject.h"
 
@@ -72,14 +72,14 @@ struct AnimationFactory
     struct LinesDescriptor
     {
         using Animator = monsterCatVisualizer::animation::LinesAnimator;
-        using RenderObject = void;
+        using RenderObject = monsterCatVisualizerOpenGL::rendering::LineRenderObject;
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
-            100.0f, // elementsDensity
-            MinMax<float>{0.001f, 0.01f}, // speed
-            MinMax<float>{0.001f, 0.005f}, // length
-            0.01f, // lineWidth
+            40.0f, // elementsDensity
+            MinMax<float>{0.01f, 0.02f}, // speed
+            MinMax<float>{0.005f, 0.025f}, // length
+            0.0005f, // lineWidth
             MinMax<ColorRGBA> // color
             {
                 ColorRGBA{168u, 168u, 168u, 0.4f},
@@ -98,9 +98,9 @@ struct AnimationFactory
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
-            1000.0f, // elementsDensity
+            500.0f, // elementsDensity
             MinMax<float>{0.001f, 0.01f}, // speed
-            MinMax<float>{0.001f, 0.005f}, // radius
+            MinMax<float>{0.0005f, 0.0025f}, // radius
             MinMax<ColorRGBA> // color
             {
                 ColorRGBA{168u, 168u, 168u, 0.4f},

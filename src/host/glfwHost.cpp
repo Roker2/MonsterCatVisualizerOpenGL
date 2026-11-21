@@ -136,6 +136,8 @@ GlfwHost::RenderObjectCreationStorage GlfwHost::initializeAnimation()
     RenderObjectCreationStorage renderObjectCreationStorage;
     createDefault<utils::AnimationFactory::ParticlesDescriptor>(
         *m_animationOrchestrator, renderObjectCreationStorage);
+    createDefault<utils::AnimationFactory::LinesDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage);
 
     return renderObjectCreationStorage;
 }

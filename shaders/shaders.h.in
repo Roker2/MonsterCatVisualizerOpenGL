@@ -8,4 +8,7 @@ namespace monsterCatVisualizerOpenGL::shaders
 inline constexpr char particleVertex[] = R"GLSL(@PARTICLE_VERT@)GLSL";
 inline constexpr char particleFragment[] = R"GLSL(@PARTICLE_FRAG@)GLSL";
 
+inline constexpr char lineVertex[] = R"GLSL(@LINE_VERT@)GLSL";
+inline constexpr char lineFragment[] = R"GLSL(@LINE_FRAG@)GLSL";
+
 } // namespace monsterCatVisualizerOpenGL::shaders

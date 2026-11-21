@@ -72,7 +72,7 @@ public:
         utils::VertexArray::unbind();
         utils::VertexBuffer::unbind();
 
-        // TODO: init vbo
+        // TODO: make incremental transferring data to VBO
     }
 
     void synchronize(const StorageGpu& storageGpu)
