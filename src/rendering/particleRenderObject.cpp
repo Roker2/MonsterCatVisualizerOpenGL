@@ -67,6 +67,12 @@ void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
         },
         {
             3, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startTime)
+        },
+        {
+            4, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, radius)
+        },
+        {
+            5, 4, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, colorRGBA)
         }
     };
 
