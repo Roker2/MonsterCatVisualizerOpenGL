@@ -78,8 +78,8 @@ struct AnimationFactory
         {
             40.0f, // elementsDensity
             MinMax<float>{0.01f, 0.02f}, // speed
-            MinMax<float>{0.005f, 0.025f}, // length
-            0.0005f, // lineWidth
+            MinMax<float>{0.01f, 0.05f}, // length
+            0.001f, // lineWidth
             MinMax<ColorRGBA> // color
             {
                 ColorRGBA{168u, 168u, 168u, 0.4f},

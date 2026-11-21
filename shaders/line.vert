@@ -61,7 +61,7 @@ vec2 calculatePositionNVS()
 vec2 calculateCornerOffset()
 {
     vec2 corner = corners[gl_VertexID];
-    vec2 lineCorner = corner * vec2(aLength, aLineWidth);
+    vec2 lineCorner = corner * vec2(aLength, aLineWidth) * 0.5;
     return convertNSSToNVS(rotate2d() * lineCorner);
 }
 
