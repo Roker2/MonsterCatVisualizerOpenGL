@@ -73,6 +73,7 @@ void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
     m_visualHandler.initialize(desiredCount,
         uniformNames,
         attributes);
+    m_visualHandler.synchronize(m_containerHandler.getStorageGpu());
 }
 
 } // namespace monsterCatVisualizerOpenGL::rendering

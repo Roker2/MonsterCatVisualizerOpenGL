@@ -51,6 +51,7 @@ public:
     {
         m_storageGpu.reserve(desiredCount);
         Storage::reservePatch(desiredCount, m_lastPatch);
+        setInitialData();
     }
 
     /**

@@ -32,9 +32,10 @@ public:
     template <typename Value>
     using UniformPair = std::pair<std::string_view, Value>;
 
-    static constexpr std::size_t maxElements = static_cast<std::size_t>(
-        std::numeric_limits<GLsizeiptr>::max()) /
-        sizeof(DataModelGpu);
+    static constexpr std::size_t maxElements = std::min(
+        static_cast<std::size_t>(std::numeric_limits<GLsizei>::max()),
+        static_cast<std::size_t>(std::numeric_limits<GLsizeiptr>::max()) /
+            sizeof(DataModelGpu));
 
     RenderVisualHandler(std::string_view vertexSource,
         std::string_view fragmentSource)

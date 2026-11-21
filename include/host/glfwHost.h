@@ -55,14 +55,14 @@ private:
     void initializeGLFW();
     void deinitializeGLFW();
 
-    void initializeAnimation();
+    RenderObjectCreationStorage initializeAnimation();
     void deinitializeAnimation();
 
-    void initializeRendering();
+    void initializeRendering(RenderObjectCreationStorage&& renderObjectCreationStorage);
     void deinitializeRendering();
 
     void setFramebufferSize(int width, int height);
-    void renderLoop() noexcept;
+    void renderLoop(RenderObjectCreationStorage&& renderObjectCreationStorage) noexcept;
 
     GLFWwindow* m_window{};
     bool m_glfwInitialized{};
@@ -75,7 +75,6 @@ private:
     ViewportStatePtr m_viewportState;
 
     AnimationOrchestratorPtr m_animationOrchestrator;
-    RenderObjectCreationStorage m_renderObjectCreationStorage;
 };
 
 } // namespace monsterCatVisualizerOpenGL::host

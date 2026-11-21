@@ -55,18 +55,18 @@ void OpenGLRenderer::initialize()
 
 void OpenGLRenderer::resize(std::int32_t viewportWidth, std::int32_t viewportHeight)
 {
-    for (const auto& object : m_renderObjects)
-        if (!object->isInitialized())
-            object->initialize(viewportWidth, viewportHeight);
-
     glViewport(0, 0, viewportWidth, viewportHeight);
 }
 
 void OpenGLRenderer::render(const RenderFrameContext& frame)
 {
     glClear(GL_COLOR_BUFFER_BIT);
+
     for (const auto& object : m_renderObjects)
     {
+        if (!object->isInitialized())
+            object->initialize(frame.viewportWidth, frame.viewportHeight);
+
         object->synchronize();
         object->render(frame);
     }
