@@ -42,6 +42,7 @@ void ParticleRenderObject::render(const RenderFrameContext& frame)
     m_visualHandler.prepareRendering(
         VisualHandler::UniformPair<GLfloat>{uniformTime, static_cast<GLfloat>(frame.timeSeconds)},
         VisualHandler::UniformPair<GLfloat>{uniformViewportRatio, frame.viewportRatio});
+
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_visualHandler.getRenderedCount());
 }
 

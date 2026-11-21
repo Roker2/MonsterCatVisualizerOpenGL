@@ -29,8 +29,6 @@ public:
     /** Construct and destroy only on a thread with a current OpenGL context. */
     LineRenderObject(StoragePtr storagePtr, float elementsDensity);
 
-    using BaseRenderObject::initialize;
-
     void synchronize() override;
     void clear() override;
     void render(const RenderFrameContext& frame) override;

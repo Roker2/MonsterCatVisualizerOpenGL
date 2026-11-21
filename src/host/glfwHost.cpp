@@ -21,6 +21,7 @@ namespace
 constexpr monsterCatVisualizer::primitives::MinMax<std::size_t> threadsCountValidator{1ull, 4ull};
 constexpr double pollEventsTimeoutSeconds = 0.05;
 constexpr double sleepTimeoutSeconds = 0.025;
+constexpr monsterCatVisualizer::primitives::ColorRGB<> defaultCloudThemeColor{180u, 180u, 180u};
 
 void errorCallback(int error, const char* description)
 {
@@ -28,12 +29,27 @@ void errorCallback(int error, const char* description)
 }
 
 template <typename Desc, typename AnimationOrchestrator, typename RenderObjectCreationStorage>
-void createDefault(AnimationOrchestrator& animationOrchestrator, RenderObjectCreationStorage& renderObjectCreationStorage)
+void createDefault(AnimationOrchestrator& animationOrchestrator,
+    RenderObjectCreationStorage& renderObjectCreationStorage)
 {
     using AnimationFactory = monsterCatVisualizerOpenGL::utils::AnimationFactory;
 
     auto [animatorCreationFunc, renderObjectCreationFunc] =
         AnimationFactory::createDefault<Desc>();
+
+    animationOrchestrator.addAnimator(animatorCreationFunc(), Desc::updateIntervalSeconds);
+    renderObjectCreationStorage.emplace_back(std::move(renderObjectCreationFunc));
+}
+
+template <typename Desc, typename AnimationOrchestrator, typename RenderObjectCreationStorage, typename... Args>
+void create(AnimationOrchestrator& animationOrchestrator,
+    RenderObjectCreationStorage& renderObjectCreationStorage,
+    Args&&... customArgs)
+{
+    using AnimationFactory = monsterCatVisualizerOpenGL::utils::AnimationFactory;
+
+    auto [animatorCreationFunc, renderObjectCreationFunc] =
+        AnimationFactory::create<Desc>(Desc::source, std::forward<Args>(customArgs)...);
 
     animationOrchestrator.addAnimator(animatorCreationFunc(), Desc::updateIntervalSeconds);
     renderObjectCreationStorage.emplace_back(std::move(renderObjectCreationFunc));
@@ -138,6 +154,11 @@ GlfwHost::RenderObjectCreationStorage GlfwHost::initializeAnimation()
         *m_animationOrchestrator, renderObjectCreationStorage);
     createDefault<utils::AnimationFactory::LinesDescriptor>(
         *m_animationOrchestrator, renderObjectCreationStorage);
+
+    auto themeColorState = std::make_shared<monsterCatVisualizer::utils::ThemeColorState>();
+    themeColorState->setColor(defaultCloudThemeColor);
+    create<utils::AnimationFactory::CloudsDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage, std::move(themeColorState));
 
     return renderObjectCreationStorage;
 }

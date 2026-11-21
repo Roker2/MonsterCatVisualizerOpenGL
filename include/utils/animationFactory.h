@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "animation/cloudsAnimator.h"
-// #include "rendering/cloudRenderObject.h"
+#include "rendering/cloudRenderObject.h"
 #include "animation/linesAnimator.h"
 #include "rendering/lineRenderObject.h"
 #include "animation/particlesAnimator.h"
@@ -49,23 +49,21 @@ struct AnimationFactory
     struct CloudsDescriptor
     {
         using Animator = monsterCatVisualizer::animation::CloudsAnimator;
-        using RenderObject = void;
+        using RenderObject = monsterCatVisualizerOpenGL::rendering::CloudRenderObject;
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             20.0f, // elementsDensity
-            MinMax<float>{0.0001f, 0.001f}, // speed
+            MinMax<float>{0.00025f, 0.002f}, // speed
             MinMax<float>{0.01f, 0.1f}, // radius
             MinMax<ColorRGBA> // color
             {
-                ColorRGBA{168u, 168u, 168u, 0.4f},
-                ColorRGBA{240u, 240u, 240u, 0.9f}
+                ColorRGBA{168u, 168u, 168u, 0.25f},
+                ColorRGBA{240u, 240u, 240u, 0.6f}
             },
             0.6f // themeColorProbability
         };
 
-        static constexpr auto defaultAnimatorArgs = std::make_tuple(
-            ColorRGB{180u, 180u, 180u});
         static constexpr double updateIntervalSeconds = 0.5;
     };
 
@@ -82,12 +80,11 @@ struct AnimationFactory
             0.001f, // lineWidth
             MinMax<ColorRGBA> // color
             {
-                ColorRGBA{168u, 168u, 168u, 0.4f},
-                ColorRGBA{240u, 240u, 240u, 0.9f}
+                ColorRGBA{168u, 168u, 168u, 0.5f},
+                ColorRGBA{240u, 240u, 240u, 0.8f}
             }
         };
 
-        static constexpr auto defaultAnimatorArgs = std::make_tuple();
         static constexpr double updateIntervalSeconds = 0.1;
     };
 
@@ -108,38 +105,49 @@ struct AnimationFactory
             }
         };
 
-        static constexpr auto defaultAnimatorArgs = std::make_tuple();
         static constexpr double updateIntervalSeconds = 0.1;
     };
 
     template <typename Desc, typename Source = decltype(Desc::source)>
     static auto createDefault(const Source& source = Desc::source)
     {
-        return std::apply(
-            [&source](auto&&... args)
-            {
-                return create<Desc>(source, std::forward<decltype(args)>(args)...);
-            },
-            Desc::defaultAnimatorArgs);
-    }
-
-    template <typename Desc, typename Source, typename... Args>
-    static auto create(const Source& source = Desc::source, Args&&... animatorArgs)
-    {
         using FactoryDescriptor = AnimationFactoryDescriptor<Desc>;
         auto storage = std::make_shared<typename FactoryDescriptor::Storage>();
 
         AnimatorCreationFunc animatorCreationFunc =
-            [animatorArgs..., storage, source]() mutable
+            [storage, source]() mutable
         {
             return std::make_shared<Desc::Animator>(
-                std::forward<Args>(animatorArgs)...,
                 storage, source);
         };
         RenderObjectCreationFunc renderObjectCreationFunc =
             [storage, elementsDensity = source.elementsDensity]()
         {
             return std::make_unique<Desc::RenderObject>(
+                storage, elementsDensity);
+        };
+
+        return std::make_tuple(animatorCreationFunc, renderObjectCreationFunc);
+    }
+
+    template <typename Desc, typename Source, typename... Args>
+    static auto create(const Source& source, Args&&... customArgs)
+    {
+        using FactoryDescriptor = AnimationFactoryDescriptor<Desc>;
+        auto storage = std::make_shared<typename FactoryDescriptor::Storage>();
+
+        AnimatorCreationFunc animatorCreationFunc =
+            [customArgs..., storage, source]() mutable
+        {
+            return std::make_shared<Desc::Animator>(
+                std::forward<Args>(customArgs)...,
+                storage, source);
+        };
+        RenderObjectCreationFunc renderObjectCreationFunc =
+            [customArgs..., storage, elementsDensity = source.elementsDensity]() mutable
+        {
+            return std::make_unique<Desc::RenderObject>(
+                std::forward<Args>(customArgs)...,
                 storage, elementsDensity);
         };
 
