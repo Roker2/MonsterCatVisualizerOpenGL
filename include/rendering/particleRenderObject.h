@@ -25,6 +25,7 @@ public:
 
     static constexpr char uniformTime[] = "uTime";
     static constexpr char uniformViewportRatio[] = "uViewportRatio";
+    static constexpr char uniformMinRadius[] = "uMinRadius";
 
     /** Construct and destroy only on a thread with a current OpenGL context. */
     ParticleRenderObject(StoragePtr storagePtr, float elementsDensity);

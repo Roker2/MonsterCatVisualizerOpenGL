@@ -13,6 +13,7 @@ flat out float fragRadius;
 
 uniform float uTime;
 uniform float uViewportRatio;
+uniform float uMinRadius;
 
 const vec2 corners[4] = vec2[4](
     vec2(-1.0, -1.0),
@@ -47,7 +48,7 @@ vec2 calculatePositionNVS()
 vec2 calculateCornerOffset()
 {
     vec2 corner = corners[gl_VertexID];
-    return convertNSSToNVS(corner * aRadius);
+    return convertNSSToNVS(corner * max(aRadius, uMinRadius));
 }
 
 void main()

@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "shaders.h"
+#include "utils/mathUtils.h"
 
 namespace monsterCatVisualizerOpenGL::rendering
 {
@@ -39,9 +40,14 @@ void ParticleRenderObject::render(const RenderFrameContext& frame)
     if (!isInitialized())
         return;
 
+    const float minRadius = monsterCatVisualizer::utils::SpatialMathUtils::convertSSToNSS(
+        monsterCatVisualizer::models::Particle::minRadiusPx,
+        frame.viewportWidth, frame.viewportHeight);
+
     m_visualHandler.prepareRendering(
         VisualHandler::UniformPair<GLfloat>{uniformTime, static_cast<GLfloat>(frame.timeSeconds)},
-        VisualHandler::UniformPair<GLfloat>{uniformViewportRatio, frame.viewportRatio});
+        VisualHandler::UniformPair<GLfloat>{uniformViewportRatio, frame.viewportRatio},
+        VisualHandler::UniformPair<GLfloat>{uniformMinRadius, minRadius});
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_visualHandler.getRenderedCount());
 }
@@ -52,7 +58,7 @@ void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
 
     const std::vector<std::string> uniformNames
     {
-        uniformTime, uniformViewportRatio
+        uniformTime, uniformViewportRatio, uniformMinRadius
     };
 
     constexpr GLsizei stride = static_cast<GLsizei>(sizeof(DataModelGpu));
