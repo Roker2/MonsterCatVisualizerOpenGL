@@ -8,6 +8,8 @@ layout(location = 4) in float aRadius;
 layout(location = 5) in vec4 aColorRGBA;
 
 out vec4 fragColorRGBA;
+out vec2 fragLocalPosition;
+flat out float fragRadius;
 
 uniform float uTime;
 uniform float uViewportRatio;
@@ -56,4 +58,6 @@ void main()
     gl_Position = vec4(positionNDC, 0.0, 1.0);
 
     fragColorRGBA = aColorRGBA;
+    fragLocalPosition = corners[gl_VertexID];
+    fragRadius = aRadius;
 }
