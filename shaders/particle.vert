@@ -4,11 +4,18 @@ layout(location = 0) in vec2 aStartPosition;
 layout(location = 1) in vec2 aDirection;
 layout(location = 2) in float aSpeed;
 layout(location = 3) in float aStartTime;
-layout(location = 4) in float aRadius;
-layout(location = 5) in vec4 aColorRGBA;
+layout(location = 4) in float aLifetime;
+layout(location = 5) in float aFadeIn;
+layout(location = 6) in float aFadeOut;
+layout(location = 7) in float aRadius;
+layout(location = 8) in vec4 aColorRGBA;
 
 out vec4 fragColorRGBA;
 out vec2 fragLocalPosition;
+flat out float fragAge;
+flat out float fragLifetime;
+flat out float fragFadeIn;
+flat out float fragFadeOut;
 flat out float fragRadius;
 
 uniform float uTime;
@@ -60,5 +67,11 @@ void main()
 
     fragColorRGBA = aColorRGBA;
     fragLocalPosition = corners[gl_VertexID];
+
+    fragAge = uTime - aStartTime;
+    fragLifetime = aLifetime;
+    fragFadeIn = aFadeIn;
+    fragFadeOut = aFadeOut;
+
     fragRadius = aRadius;
 }

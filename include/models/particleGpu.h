@@ -28,6 +28,10 @@ struct ParticleGpu
             particle.trajectory.speed,
             static_cast<GLfloat>(particle.trajectory.startTimeSeconds),
 
+            static_cast<GLfloat>(particle.lifetime.lifetimeSeconds),
+            static_cast<GLfloat>(particle.lifetime.fadeInSeconds),
+            static_cast<GLfloat>(particle.lifetime.fadeOutSeconds),
+
             particle.geometry.radius,
             {
                 particle.visual.color.r / 255.0f,
@@ -42,6 +46,10 @@ struct ParticleGpu
     GLfloat direction[2]{};
     GLfloat speed{};
     GLfloat startTime{};
+
+    GLfloat lifetime{};
+    GLfloat fadeIn{};
+    GLfloat fadeOut{};
 
     GLfloat radius{};
     GLfloat colorRGBA[4]{};

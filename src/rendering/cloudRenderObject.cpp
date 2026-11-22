@@ -82,13 +82,22 @@ void CloudRenderObject::initializeInternal(std::size_t desiredCount)
             3, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startTime), 1
         },
         {
-            4, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, radius), 1
+            4, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, lifetime), 1
         },
         {
-            5, 4, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, colorRGBA), 1
+            5, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, fadeIn), 1
         },
         {
-            6, 1, GL_INT, GL_FALSE, stride, offsetof(DataModelGpu, isThemeColored), 1, utils::VertexAttributeKind::Integer
+            6, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, fadeOut), 1
+        },
+        {
+            7, 1, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, radius), 1
+        },
+        {
+            8, 4, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, colorRGBA), 1
+        },
+        {
+            9, 1, GL_INT, GL_FALSE, stride, offsetof(DataModelGpu, isThemeColored), 1, utils::VertexAttributeKind::Integer
         }
     };
 

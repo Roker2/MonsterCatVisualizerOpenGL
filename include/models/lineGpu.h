@@ -28,6 +28,10 @@ struct LineGpu
             line.trajectory.speed,
             static_cast<GLfloat>(line.trajectory.startTimeSeconds),
 
+            static_cast<GLfloat>(line.lifetime.lifetimeSeconds),
+            static_cast<GLfloat>(line.lifetime.fadeInSeconds),
+            static_cast<GLfloat>(line.lifetime.fadeOutSeconds),
+
             line.geometry.length,
             line.geometry.lineWidth,
             {
@@ -43,6 +47,10 @@ struct LineGpu
     GLfloat direction[2]{};
     GLfloat speed{};
     GLfloat startTime{};
+
+    GLfloat lifetime{};
+    GLfloat fadeIn{};
+    GLfloat fadeOut{};
 
     GLfloat length{};
     GLfloat lineWidth{};

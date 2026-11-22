@@ -28,6 +28,10 @@ struct CloudGpu
             cloud.trajectory.speed,
             static_cast<GLfloat>(cloud.trajectory.startTimeSeconds),
 
+            static_cast<GLfloat>(cloud.lifetime.lifetimeSeconds),
+            static_cast<GLfloat>(cloud.lifetime.fadeInSeconds),
+            static_cast<GLfloat>(cloud.lifetime.fadeOutSeconds),
+
             cloud.geometry.radius,
             {
                 cloud.visual.color.r / 255.0f,
@@ -43,6 +47,10 @@ struct CloudGpu
     GLfloat direction[2]{};
     GLfloat speed{};
     GLfloat startTime{};
+
+    GLfloat lifetime{};
+    GLfloat fadeIn{};
+    GLfloat fadeOut{};
 
     GLfloat radius{};
     GLfloat colorRGBA[4]{};

@@ -4,16 +4,22 @@ layout(location = 0) in vec2 aStartPosition;
 layout(location = 1) in vec2 aDirection;
 layout(location = 2) in float aSpeed;
 layout(location = 3) in float aStartTime;
-layout(location = 4) in float aRadius;
-layout(location = 5) in vec4 aColorRGBA;
-layout(location = 6) in int aIsThemeColored;
+layout(location = 4) in float aLifetime;
+layout(location = 5) in float aFadeIn;
+layout(location = 6) in float aFadeOut;
+layout(location = 7) in float aRadius;
+layout(location = 8) in vec4 aColorRGBA;
+layout(location = 9) in int aIsThemeColored;
 
 out vec4 fragColorRGBA;
 out vec2 fragTexCoord;
+flat out float fragAge;
+flat out float fragLifetime;
+flat out float fragFadeIn;
+flat out float fragFadeOut;
 flat out int fragIsThemeColored;
 flat out vec2 fragNoiseOffset;
 flat out vec2 fragCloudVelocityUV;
-flat out float fragAge;
 
 uniform float uTime;
 uniform float uViewportRatio;
@@ -92,9 +98,14 @@ void main()
 
     fragColorRGBA = aColorRGBA;
     fragTexCoord = texCoords[gl_VertexID];
+
+    fragAge = uTime - aStartTime;
+    fragLifetime = aLifetime;
+    fragFadeIn = aFadeIn;
+    fragFadeOut = aFadeOut;
+
     fragIsThemeColored = aIsThemeColored;
 
     fragNoiseOffset = aStartPosition * 41.0 + aDirection * 13.0;
     fragCloudVelocityUV = calculateCloudVelocityUV(directionNVS);
-    fragAge = uTime - aStartTime;
 }

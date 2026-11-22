@@ -53,9 +53,15 @@ struct AnimationFactory
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
-            12.0f, // elementsDensity
-            MinMax<float>{0.0005f, 0.005f}, // speed
-            MinMax<float>{0.05f, 0.2f}, // radius
+            {
+                12.0f, // elementsDensity
+                MinMax<float>{0.0005f, 0.005f}, // speed
+                MinMax<double>{150.0, 360.0}, // lifetimeSeconds
+                MinMax<double>{2.0, 4.0}, // fadeInSeconds
+                MinMax<double>{2.5, 5.0}, // fadeOutSeconds
+            },
+
+            MinMax<float>{0.12f, 0.2f}, // radius
             MinMax<ColorRGBA> // color
             {
                 ColorRGBA{168u, 168u, 168u, 0.25f},
@@ -74,8 +80,14 @@ struct AnimationFactory
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
-            40.0f, // elementsDensity
-            MinMax<float>{0.001f, 0.005f}, // speed
+            {
+                40.0f, // elementsDensity
+                MinMax<float>{0.001f, 0.005f}, // speed
+                MinMax<double>{120.0, 210.0}, // lifetimeSeconds
+                MinMax<double>{0.5, 2.0}, // fadeInSeconds
+                MinMax<double>{1.5, 4.5}, // fadeOutSeconds
+            },
+
             MinMax<float>{0.01f, 0.08f}, // length
             0.0025f, // lineWidth
             MinMax<ColorRGBA> // color
@@ -95,8 +107,14 @@ struct AnimationFactory
 
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
-            4000.0f, // elementsDensity
-            MinMax<float>{0.00025f, 0.0025f}, // speed
+            {
+                4000.0f, // elementsDensity
+                MinMax<float>{0.00025f, 0.0025f}, // speed
+                MinMax<double>{90.0, 150.0}, // lifetimeSeconds
+                MinMax<double>{1.0, 2.0}, // fadeInSeconds
+                MinMax<double>{1.5, 2.5}, // fadeOutSeconds
+            },
+
             MinMax<float>{0.0005f, 0.0040f}, // radius
             MinMax<ColorRGBA> // color
             {
