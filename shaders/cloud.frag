@@ -2,10 +2,8 @@
 
 in vec4 fragColorRGBA;
 in vec2 fragTexCoord;
+flat in float fragFadeFactor;
 flat in float fragAge;
-flat in float fragLifetime;
-flat in float fragFadeIn;
-flat in float fragFadeOut;
 flat in int fragIsThemeColored;
 flat in vec2 fragNoiseOffset;
 flat in vec2 fragCloudVelocityUV;
@@ -122,32 +120,15 @@ float applyDithering(float alpha)
     return clamp(alpha + dither * alphaDitherStrength * ditherFactor, 0.0, 1.0);
 }
 
-float calculateFadeFactor()
-{
-    float fadeInFactor = smoothstep(
-        0.0,
-        fragFadeIn,
-        fragAge);
-
-    float fadeOutFactor = 1.0 - smoothstep(
-        fragLifetime - fragFadeOut,
-        fragLifetime,
-        fragAge);
-
-    return fadeInFactor * fadeOutFactor;
-}
-
 void main()
 {
     vec4 color = calculateBaseColor();
 
     float edgeMask = calculateEdgeMask();
     float smokeDensity = calculateSmokeDensity();
-    float mask = edgeMask * smokeDensity;
+    float mask = edgeMask * smokeDensity * fragFadeFactor;
 
-    float fadeFactor = calculateFadeFactor();
-
-    float alpha = applyDithering(color.a * mask * fadeFactor);
+    float alpha = applyDithering(color.a * mask);
 
     FragColor = vec4(color.rgb, alpha);
 }

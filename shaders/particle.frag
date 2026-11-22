@@ -2,10 +2,7 @@
 
 in vec4 fragColorRGBA;
 in vec2 fragLocalPosition;
-flat in float fragAge;
-flat in float fragLifetime;
-flat in float fragFadeIn;
-flat in float fragFadeOut;
+flat in float fragFadeFactor;
 flat in float fragRadius;
 
 out vec4 FragColor;
@@ -79,21 +76,6 @@ float calculateRays(vec2 localPosition)
     return rays * rayStrength;
 }
 
-float calculateFadeFactor()
-{
-    float fadeInFactor = smoothstep(
-        0.0,
-        fragFadeIn,
-        fragAge);
-
-    float fadeOutFactor = 1.0 - smoothstep(
-        fragLifetime - fragFadeOut,
-        fragLifetime,
-        fragAge);
-
-    return fadeInFactor * fadeOutFactor;
-}
-
 void main()
 {
     float distanceSquared = dot(fragLocalPosition, fragLocalPosition);
@@ -121,9 +103,7 @@ void main()
         * (1.0 - halo)
         * (1.0 - rays);
 
-    float fadeFactor = calculateFadeFactor();
-
     FragColor = vec4(
         fragColorRGBA.rgb,
-        fragColorRGBA.a * intensity * fadeFactor);
+        fragColorRGBA.a * intensity * fragFadeFactor);
 }

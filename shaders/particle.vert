@@ -12,10 +12,7 @@ layout(location = 8) in vec4 aColorRGBA;
 
 out vec4 fragColorRGBA;
 out vec2 fragLocalPosition;
-flat out float fragAge;
-flat out float fragLifetime;
-flat out float fragFadeIn;
-flat out float fragFadeOut;
+flat out float fragFadeFactor;
 flat out float fragRadius;
 
 uniform float uTime;
@@ -41,12 +38,12 @@ vec2 convertNSSToNVS(vec2 position)
     return vec2(position.x / uViewportRatio, position.y);
 }
 
-vec2 calculatePositionNVS()
+vec2 calculatePositionNVS(float age)
 {
     vec2 directionNVS = convertNSSToNVS(aDirection);
     directionNVS = normalize(directionNVS);
 
-    float offsetMultiplier = aSpeed * (uTime - aStartTime);
+    float offsetMultiplier = aSpeed * age;
     vec2 offset = directionNVS * offsetMultiplier;
 
     return aStartPosition + offset;
@@ -58,20 +55,33 @@ vec2 calculateCornerOffset()
     return convertNSSToNVS(corner * max(aRadius, uMinRadius));
 }
 
+float calculateFadeFactor(float age)
+{
+    float fadeInFactor = smoothstep(
+        0.0,
+        aFadeIn,
+        age);
+
+    float fadeOutFactor = 1.0 - smoothstep(
+        aLifetime - aFadeOut,
+        aLifetime,
+        age);
+
+    return fadeInFactor * fadeOutFactor;
+}
+
 void main()
 {
+    float age = uTime - aStartTime;
     vec2 cornerOffsetNVS = calculateCornerOffset();
-    vec2 positionNVS = calculatePositionNVS();
+    vec2 positionNVS = calculatePositionNVS(age);
     vec2 positionNDC = convertNVStoNDC(positionNVS + cornerOffsetNVS);
     gl_Position = vec4(positionNDC, 0.0, 1.0);
 
     fragColorRGBA = aColorRGBA;
     fragLocalPosition = corners[gl_VertexID];
 
-    fragAge = uTime - aStartTime;
-    fragLifetime = aLifetime;
-    fragFadeIn = aFadeIn;
-    fragFadeOut = aFadeOut;
+    fragFadeFactor = calculateFadeFactor(age);
 
     fragRadius = aRadius;
 }

@@ -2,10 +2,7 @@
 
 in vec4 fragColorRGBA;
 in vec2 fragTexCoord;
-flat in float fragAge;
-flat in float fragLifetime;
-flat in float fragFadeIn;
-flat in float fragFadeOut;
+flat in float fragFadeFactor;
 flat in float fragLengthToWidth;
 
 out vec4 FragColor;
@@ -99,21 +96,6 @@ float calculateTailEndFade(float texCoordX)
         texCoordX);
 }
 
-float calculateFadeFactor()
-{
-    float fadeInFactor = smoothstep(
-        0.0,
-        fragFadeIn,
-        fragAge);
-
-    float fadeOutFactor = 1.0 - smoothstep(
-        fragLifetime - fragFadeOut,
-        fragLifetime,
-        fragAge);
-
-    return fadeInFactor * fadeOutFactor;
-}
-
 void main()
 {
     float lengthFade = clamp(calculateLengthFade(fragTexCoord.x), 0.0, 1.0);
@@ -130,9 +112,7 @@ void main()
         * (1.0 - headCore)
         * (1.0 - headHalo);
 
-    float fadeFactor = calculateFadeFactor();
-
     FragColor = vec4(
         fragColorRGBA.rgb,
-        fragColorRGBA.a * combinedAlpha * fadeFactor);
+        fragColorRGBA.a * combinedAlpha * fragFadeFactor);
 }

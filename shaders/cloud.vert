@@ -13,10 +13,8 @@ layout(location = 9) in int aIsThemeColored;
 
 out vec4 fragColorRGBA;
 out vec2 fragTexCoord;
+flat out float fragFadeFactor;
 flat out float fragAge;
-flat out float fragLifetime;
-flat out float fragFadeIn;
-flat out float fragFadeOut;
 flat out int fragIsThemeColored;
 flat out vec2 fragNoiseOffset;
 flat out vec2 fragCloudVelocityUV;
@@ -65,9 +63,9 @@ vec2 calculateDirectionNVS()
     return normalize(directionNVS);
 }
 
-vec2 calculatePositionNVS(vec2 directionNVS)
+vec2 calculatePositionNVS(vec2 directionNVS, float age)
 {
-    float offsetMultiplier = aSpeed * (uTime - aStartTime);
+    float offsetMultiplier = aSpeed * age;
     vec2 offset = directionNVS * offsetMultiplier;
 
     return aStartPosition + offset;
@@ -87,10 +85,26 @@ vec2 calculateCloudVelocityUV(vec2 directionNVS)
     return velocityNSS / (2.0 * aRadius);
 }
 
+float calculateFadeFactor(float age)
+{
+    float fadeInFactor = smoothstep(
+        0.0,
+        aFadeIn,
+        age);
+
+    float fadeOutFactor = 1.0 - smoothstep(
+        aLifetime - aFadeOut,
+        aLifetime,
+        age);
+
+    return fadeInFactor * fadeOutFactor;
+}
+
 void main()
 {
+    float age = uTime - aStartTime;
     vec2 directionNVS = calculateDirectionNVS();
-    vec2 positionNVS = calculatePositionNVS(directionNVS);
+    vec2 positionNVS = calculatePositionNVS(directionNVS, age);
     vec2 cornerOffsetNVS = calculateCornerOffsetNVS();
     vec2 positionNDC = convertNVStoNDC(positionNVS + cornerOffsetNVS);
 
@@ -99,11 +113,9 @@ void main()
     fragColorRGBA = aColorRGBA;
     fragTexCoord = texCoords[gl_VertexID];
 
-    fragAge = uTime - aStartTime;
-    fragLifetime = aLifetime;
-    fragFadeIn = aFadeIn;
-    fragFadeOut = aFadeOut;
+    fragFadeFactor = calculateFadeFactor(age);
 
+    fragAge = age;
     fragIsThemeColored = aIsThemeColored;
 
     fragNoiseOffset = aStartPosition * 41.0 + aDirection * 13.0;
