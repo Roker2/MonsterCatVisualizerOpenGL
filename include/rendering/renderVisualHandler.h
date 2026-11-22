@@ -69,6 +69,13 @@ public:
             m_vertexArray.addAttribute(m_vertexBuffer, attribute);
         }
 
+#ifndef NDEBUG
+        m_shaderProgram.bind();
+        m_vertexArray.bind();
+        m_shaderProgram.validate();
+        utils::ShaderProgram::unbind();
+#endif
+
         utils::VertexArray::unbind();
         utils::VertexBuffer::unbind();
 
