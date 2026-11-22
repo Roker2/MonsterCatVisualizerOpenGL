@@ -54,19 +54,24 @@ struct AnimationFactory
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             {
-                12.0f, // elementsDensity
+                14.0f, // elementsDensity
                 MinMax<float>{0.0005f, 0.005f}, // speed
                 MinMax<double>{150.0, 360.0}, // lifetimeSeconds
                 MinMax<double>{2.0, 4.0}, // fadeInSeconds
                 MinMax<double>{2.5, 5.0}, // fadeOutSeconds
             },
 
-            MinMax<float>{0.12f, 0.2f}, // radius
+            MinMax<float>{0.11f, 0.17f}, // radius
             MinMax<ColorRGBA> // color
             {
-                ColorRGBA{168u, 168u, 168u, 0.25f},
-                ColorRGBA{240u, 240u, 240u, 0.6f}
+                ColorRGBA{170u, 150u, 180u, 0.25f},
+                ColorRGBA{240u, 195u, 250u, 0.65f}
             },
+            // MinMax<ColorRGBA> // color
+            // {
+            //     ColorRGBA{190u, 185u, 200u, 0.4f},
+            //     ColorRGBA{240u, 225u, 250u, 0.9f}
+            // }
             0.6f // themeColorProbability
         };
 
@@ -81,19 +86,19 @@ struct AnimationFactory
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             {
-                40.0f, // elementsDensity
+                24.0f, // elementsDensity
                 MinMax<float>{0.001f, 0.005f}, // speed
                 MinMax<double>{120.0, 210.0}, // lifetimeSeconds
                 MinMax<double>{0.5, 2.0}, // fadeInSeconds
                 MinMax<double>{1.5, 4.5}, // fadeOutSeconds
             },
 
-            MinMax<float>{0.01f, 0.08f}, // length
+            MinMax<float>{0.03f, 0.08f}, // length
             0.0025f, // lineWidth
             MinMax<ColorRGBA> // color
             {
-                ColorRGBA{168u, 168u, 168u, 0.5f},
-                ColorRGBA{240u, 240u, 240u, 0.8f}
+                ColorRGBA{200u, 195u, 210u, 0.6f},
+                ColorRGBA{235u, 220u, 250u, 0.85f}
             }
         };
 
@@ -115,11 +120,11 @@ struct AnimationFactory
                 MinMax<double>{1.5, 2.5}, // fadeOutSeconds
             },
 
-            MinMax<float>{0.0005f, 0.0040f}, // radius
+            MinMax<float>{0.0005f, 0.0035f}, // radius
             MinMax<ColorRGBA> // color
             {
-                ColorRGBA{168u, 168u, 168u, 0.4f},
-                ColorRGBA{240u, 240u, 240u, 0.9f}
+                ColorRGBA{190u, 185u, 200u, 0.4f},
+                ColorRGBA{240u, 225u, 250u, 0.9f}
             }
         };
 
