@@ -75,9 +75,9 @@ struct AnimationFactory
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             40.0f, // elementsDensity
-            MinMax<float>{0.01f, 0.02f}, // speed
-            MinMax<float>{0.01f, 0.05f}, // length
-            0.001f, // lineWidth
+            MinMax<float>{0.001f, 0.005f}, // speed
+            MinMax<float>{0.01f, 0.08f}, // length
+            0.0025f, // lineWidth
             MinMax<ColorRGBA> // color
             {
                 ColorRGBA{168u, 168u, 168u, 0.5f},

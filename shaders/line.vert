@@ -10,22 +10,19 @@ layout(location = 6) in vec4 aColorRGBA;
 
 out vec4 fragColorRGBA;
 out vec2 fragTexCoord;
+flat out float fragLengthToWidth;
 
 uniform float uTime;
 uniform float uViewportRatio;
+
+const float headMarginWidths = 2.5;
+const float halfQuadWidthWidths = 2.5;
 
 const vec2 corners[4] = vec2[4](
     vec2(-1.0, -1.0),
     vec2( 1.0, -1.0),
     vec2(-1.0,  1.0),
     vec2( 1.0,  1.0)
-);
-
-const vec2 texCoords[4] = vec2[4](
-    vec2(0.0, 0.0),
-    vec2(1.0, 0.0),
-    vec2(0.0, 1.0),
-    vec2(1.0, 1.0)
 );
 
 mat2 rotate2d()
@@ -58,20 +55,37 @@ vec2 calculatePositionNVS()
     return aStartPosition + offset;
 }
 
-vec2 calculateCornerOffset()
+vec2 calculateLineCorner()
 {
     vec2 corner = corners[gl_VertexID];
-    vec2 lineCorner = corner * vec2(aLength, aLineWidth) * 0.5;
-    return convertNSSToNVS(rotate2d() * lineCorner);
+
+    float x = mix(
+        -aLength * 0.5,
+        aLength * 0.5 + aLineWidth * headMarginWidths,
+        (corner.x + 1.0) * 0.5);
+
+    float y = corner.y * aLineWidth * halfQuadWidthWidths;
+
+    return vec2(x, y);
+}
+
+vec2 calculateFragTexCoord(vec2 lineCorner)
+{
+    return vec2(
+        lineCorner.x / aLength + 0.5,
+        lineCorner.y / aLineWidth + 0.5);
 }
 
 void main()
 {
-    vec2 cornerOffsetNVS = calculateCornerOffset();
+    vec2 lineCorner = calculateLineCorner();
+    vec2 cornerOffsetNVS = convertNSSToNVS(rotate2d() * lineCorner);
     vec2 positionNVS = calculatePositionNVS();
     vec2 positionNDC = convertNVStoNDC(positionNVS + cornerOffsetNVS);
+
     gl_Position = vec4(positionNDC, 0.0, 1.0);
 
     fragColorRGBA = aColorRGBA;
-    fragTexCoord = texCoords[gl_VertexID];
+    fragTexCoord = calculateFragTexCoord(lineCorner);
+    fragLengthToWidth = aLength / aLineWidth;
 }

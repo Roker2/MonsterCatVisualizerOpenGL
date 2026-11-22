@@ -30,8 +30,7 @@ float calculateCore(float distanceSquared)
     return 1.0 - smoothstep(
         coreStartSquared,
         coreEndSquared,
-        distanceSquared
-    );
+        distanceSquared);
 }
 
 float calculateHalo(float distanceSquared)
@@ -39,8 +38,7 @@ float calculateHalo(float distanceSquared)
     float halo = 1.0 - smoothstep(
         haloStartSquared,
         haloEndSquared,
-        distanceSquared
-    );
+        distanceSquared);
 
     return halo * haloStrength * halo;
 }
@@ -52,28 +50,24 @@ float calculateRays(vec2 localPosition)
     float horizontalWidth = 1.0 - smoothstep(
         0.0,
         rayWidth,
-        absPosition.y
-    );
+        absPosition.y);
 
     float horizontalLength = 1.0 - smoothstep(
         rayLengthStart,
         rayLengthEnd,
-        absPosition.x
-    );
+        absPosition.x);
 
     float horizontalRay = horizontalWidth * horizontalLength;
 
     float verticalWidth = 1.0 - smoothstep(
         0.0,
         rayWidth,
-        absPosition.x
-    );
+        absPosition.x);
 
     float verticalLength = 1.0 - smoothstep(
         rayLengthStart,
         rayLengthEnd,
-        absPosition.y
-    );
+        absPosition.y);
 
     float verticalRay = verticalWidth * verticalLength;
 
@@ -93,14 +87,12 @@ void main()
     float haloFactor = smoothstep(
         haloEnableRadiusStart,
         haloEnableRadiusEnd,
-        fragRadius
-    );
+        fragRadius);
 
     float raysFactor = smoothstep(
         raysEnableRadiusStart,
         raysEnableRadiusEnd,
-        fragRadius
-    );
+        fragRadius);
 
     halo *= haloFactor;
     rays *= raysFactor;
@@ -112,6 +104,5 @@ void main()
 
     FragColor = vec4(
         fragColorRGBA.rgb,
-        fragColorRGBA.a * intensity
-    );
+        fragColorRGBA.a * intensity);
 }
