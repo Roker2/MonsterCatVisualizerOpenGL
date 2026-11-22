@@ -18,6 +18,10 @@ const float edgeOuterRadius = 0.5;
 const float densityThresholdMin = 0.25;
 const float densityThresholdMax = 0.70;
 
+const float ditherFullAlpha = 0.05;
+const float ditherMaxAlpha = 0.15;
+const float alphaDitherStrength = 1.0 / 255.0;
+
 vec4 calculateBaseColor()
 {
     if (fragIsThemeColored == 1)
@@ -93,6 +97,28 @@ float calculateSmokeDensity()
         noise);
 }
 
+float calculateDither(vec2 pixelPosition)
+{
+    return fract(
+        52.9829189 * fract(
+            dot(pixelPosition, vec2(0.06711056, 0.00583715))));
+}
+
+float applyDithering(float alpha)
+{
+    if (alpha <= 0.0 || alpha >= ditherMaxAlpha)
+        return alpha;
+
+    float ditherFactor = 1.0 - smoothstep(
+        ditherFullAlpha,
+        ditherMaxAlpha,
+        alpha);
+
+    float dither = calculateDither(gl_FragCoord.xy) - 0.5;
+
+    return clamp(alpha + dither * alphaDitherStrength * ditherFactor, 0.0, 1.0);
+}
+
 void main()
 {
     vec4 color = calculateBaseColor();
@@ -101,7 +127,7 @@ void main()
     float smokeDensity = calculateSmokeDensity();
     float mask = edgeMask * smokeDensity;
 
-    FragColor = vec4(
-        color.rgb,
-        color.a * mask);
+    float alpha = applyDithering(color.a * mask);
+
+    FragColor = vec4(color.rgb, alpha);
 }
