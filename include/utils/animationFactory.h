@@ -54,7 +54,7 @@ struct AnimationFactory
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             {
-                14.0f, // elementsDensity
+                13.0f, // elementsDensity
                 MinMax<float>{0.0005f, 0.005f}, // speed
                 MinMax<double>{150.0, 360.0}, // lifetimeSeconds
                 MinMax<double>{2.0, 4.0}, // fadeInSeconds
@@ -86,10 +86,10 @@ struct AnimationFactory
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             {
-                24.0f, // elementsDensity
+                12.0f, // elementsDensity
                 MinMax<float>{0.001f, 0.005f}, // speed
                 MinMax<double>{120.0, 210.0}, // lifetimeSeconds
-                MinMax<double>{0.5, 2.0}, // fadeInSeconds
+                MinMax<double>{2.5, 4.0}, // fadeInSeconds
                 MinMax<double>{1.5, 4.5}, // fadeOutSeconds
             },
 
@@ -102,7 +102,7 @@ struct AnimationFactory
             }
         };
 
-        static constexpr double updateIntervalSeconds = 0.1;
+        static constexpr double updateIntervalSeconds = 0.4;
     };
 
     struct ParticlesDescriptor
@@ -113,7 +113,7 @@ struct AnimationFactory
         static constexpr auto source = Animator::DataModel::GenerationDescriptor
         {
             {
-                4000.0f, // elementsDensity
+                3000.0f, // elementsDensity
                 MinMax<float>{0.00025f, 0.0025f}, // speed
                 MinMax<double>{90.0, 150.0}, // lifetimeSeconds
                 MinMax<double>{1.0, 2.0}, // fadeInSeconds

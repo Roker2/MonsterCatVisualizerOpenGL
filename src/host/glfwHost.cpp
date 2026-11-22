@@ -18,7 +18,7 @@
 namespace
 {
 
-constexpr monsterCatVisualizer::primitives::MinMax<std::size_t> threadsCountValidator{1ull, 4ull};
+constexpr monsterCatVisualizer::primitives::MinMax<std::size_t> threadsCountValidator{1, 4};
 constexpr double pollEventsTimeoutSeconds = 0.05;
 constexpr double sleepTimeoutSeconds = 0.025;
 constexpr monsterCatVisualizer::primitives::ColorRGB<> defaultCloudThemeColor{180u, 180u, 180u};
