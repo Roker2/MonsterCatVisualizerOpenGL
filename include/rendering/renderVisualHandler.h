@@ -2,13 +2,15 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <vector>
-#include <stdexcept>
 #include <utility>
+#include <vector>
 
 #include <glad/gl.h>
 
@@ -62,6 +64,9 @@ public:
         const UniformNames& uniformNames,
         const VertexAttributes& attributes)
     {
+        if (desiredCount > maxElements)
+            throw std::length_error("RenderVisualHandler: too many elements");
+
         m_shaderProgram.createUniforms(uniformNames);
 
         for (const auto& attribute : attributes)
@@ -79,22 +84,57 @@ public:
         utils::VertexArray::unbind();
         utils::VertexBuffer::unbind();
 
-        // TODO: make incremental transferring data to VBO
+        if (desiredCount > 0)
+        {
+            m_vertexBuffer.allocate(static_cast<GLsizeiptr>(desiredCount * sizeof(DataModelGpu)),
+                GL_DYNAMIC_DRAW);
+        }
     }
 
+    /** Upload an entire snapshot (initialization or patch fallback). */
     void synchronize(const StorageGpu& storageGpu)
     {
-        if (storageGpu.size() > maxElements)
-            throw std::length_error("RenderVisualHandler: too many elements");
+        ensureCapacity(storageGpu.size());
+        uploadAll(storageGpu);
+        m_renderedCount = static_cast<GLsizei>(storageGpu.size());
+    }
 
-        const auto bytes = static_cast<GLsizeiptr>(storageGpu.size() * sizeof(DataModelGpu));
-        m_vertexBuffer.allocate(bytes, GL_DYNAMIC_DRAW, storageGpu.empty() ? nullptr : storageGpu.data());
+    /** Upload only the modified ranges, unless the buffer must be replaced. */
+    template <typename ModifiedRanges>
+    void synchronize(const StorageGpu& storageGpu,
+        const ModifiedRanges& modifiedRanges,
+        bool forceFullUpload)
+    {
+        const bool reallocated = ensureCapacity(storageGpu.size());
+
+        if (forceFullUpload || reallocated)
+        {
+            uploadAll(storageGpu);
+        }
+        else
+        {
+            for (const auto& range : modifiedRanges)
+            {
+                // Earlier removals can leave ranges past the final vector size.
+                if (range.index >= storageGpu.size())
+                    continue;
+
+                const std::size_t count = std::min(range.count, storageGpu.size() - range.index);
+                if (count == 0)
+                    continue;
+
+                m_vertexBuffer.update(
+                    static_cast<GLintptr>(range.index * sizeof(DataModelGpu)),
+                    static_cast<GLsizeiptr>(count * sizeof(DataModelGpu)),
+                    storageGpu.data() + range.index);
+            }
+        }
+
         m_renderedCount = static_cast<GLsizei>(storageGpu.size());
     }
 
     void clear()
     {
-        m_vertexBuffer.clear();
         m_renderedCount = 0;
     }
 
@@ -116,6 +156,41 @@ public:
     }
 
 private:
+    /** @return true if a larger GPU data store was allocated. */
+    bool ensureCapacity(std::size_t requiredCount)
+    {
+        if (requiredCount > maxElements)
+            throw std::length_error("RenderVisualHandler: too many elements");
+
+        if (requiredCount <= getCapacity())
+            return false;
+
+        std::size_t newCapacity = std::max(getCapacity(), std::size_t{1});
+        while (newCapacity < requiredCount)
+        {
+            if (newCapacity > maxElements / 2)
+            {
+                newCapacity = maxElements;
+                break;
+            }
+            newCapacity *= 2;
+        }
+
+        m_vertexBuffer.allocate(
+            static_cast<GLsizeiptr>(newCapacity * sizeof(DataModelGpu)), GL_DYNAMIC_DRAW);
+        return true;
+    }
+
+    void uploadAll(const StorageGpu& storageGpu)
+    {
+        if (storageGpu.empty())
+            return;
+
+        m_vertexBuffer.update(0,
+            static_cast<GLsizeiptr>(storageGpu.size() * sizeof(DataModelGpu)),
+            storageGpu.data());
+    }
+
     utils::ShaderProgram m_shaderProgram;
     utils::VertexBuffer m_vertexBuffer;
     utils::VertexArray m_vertexArray;

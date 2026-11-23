@@ -46,6 +46,10 @@ public:
     {
         return m_lastPatch;
     }
+    bool needsFullUpload() const noexcept
+    {
+        return m_needsFullUpload;
+    }
 
     void initialize(std::size_t desiredCount)
     {
@@ -60,14 +64,15 @@ public:
      */
     bool synchronize()
     {
-        if (!m_storagePtr->hasPatch())
+        if (!m_storagePtr->acquirePatch(m_lastPatch))
             return false;
 
-        m_storagePtr->acquirePatch(m_lastPatch);
-
-        if (!applyPatch(m_lastPatch))
+        if (m_requiresResync || !applyPatch(m_lastPatch))
             setInitialData();
+        else
+            m_needsFullUpload = m_lastPatch.clearFlag;
 
+        m_requiresResync = false;
         return true;
     }
 
@@ -75,6 +80,8 @@ public:
     {
         m_storageGpu.clear();
         m_lastPatch.reset();
+        m_requiresResync = true;
+        m_needsFullUpload = true;
     }
 
 private:
@@ -85,15 +92,16 @@ private:
         m_lastPatch.reset();
 
         m_storageGpu.clear();
-
         appendElements(initialData);
+        m_needsFullUpload = true;
+        m_requiresResync = false;
     }
 
     bool applyPatch(const PatchStorage& patch)
     {
         if (patch.clearFlag)
         {
-            clear();
+            m_storageGpu.clear();
         }
         else
         {
@@ -105,7 +113,6 @@ private:
         }
 
         appendElements(patch.appended);
-
         return true;
     }
 
@@ -124,6 +131,8 @@ private:
     StoragePtr m_storagePtr;
     StorageGpu m_storageGpu;
     PatchStorage m_lastPatch{};
+    bool m_needsFullUpload{};
+    bool m_requiresResync{};
 };
 
 } // namespace monsterCatVisualizerOpenGL::rendering

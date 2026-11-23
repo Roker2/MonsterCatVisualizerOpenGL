@@ -35,7 +35,9 @@ void CloudRenderObject::synchronize()
     if (!m_containerHandler.synchronize())
         return;
 
-    m_visualHandler.synchronize(m_containerHandler.getStorageGpu());
+    m_visualHandler.synchronize(m_containerHandler.getStorageGpu(),
+        m_containerHandler.getLastPatch().modifiedRanges,
+        m_containerHandler.needsFullUpload());
 }
 
 void CloudRenderObject::clear()
