@@ -44,7 +44,19 @@ float calculateEdgeMask()
 
 float hash21(vec2 p)
 {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    uvec2 v = uvec2(ivec2(p));
+
+    uint h = v.x * 0x8da6b343u ^
+             v.y * 0xd8163841u ^
+             0xcb1ab31fu;
+
+    h ^= h >> 16;
+    h *= 0x7feb352du;
+    h ^= h >> 15;
+    h *= 0x846ca68bu;
+    h ^= h >> 16;
+
+    return float(h >> 8) * (1.0 / 16777216.0);
 }
 
 float valueNoise(vec2 p)
