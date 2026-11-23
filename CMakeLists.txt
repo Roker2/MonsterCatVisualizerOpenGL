@@ -28,6 +28,12 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
 
 add_executable(MonsterCatVisualizerOpenGL ${SOURCES})
 
+option(MCV_ENABLE_PROFILING "Enable FPS profiling" OFF)
+
+if(MCV_ENABLE_PROFILING)
+    target_compile_definitions(MonsterCatVisualizerOpenGL PRIVATE MCV_ENABLE_PROFILING)
+endif()
+
 target_include_directories(MonsterCatVisualizerOpenGL PRIVATE include)
 
 find_package(OpenGL REQUIRED)

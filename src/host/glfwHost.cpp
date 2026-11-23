@@ -15,6 +15,10 @@
 #include "primitives/minMax.h"
 #include "rendering/openGLRenderer.h"
 
+#ifdef MCV_ENABLE_PROFILING
+#include "utils/fpsCounter.h"
+#endif
+
 namespace
 {
 
@@ -224,12 +228,20 @@ void GlfwHost::renderLoop(RenderObjectCreationStorage&& renderObjectCreationStor
         if (gladLoadGL(glfwGetProcAddress) == 0)
             throw std::runtime_error("GlfwHost: could not initialize GLAD");
 
+#ifdef MCV_ENABLE_PROFILING
+        glfwSwapInterval(0);
+#else
         glfwSwapInterval(1);
+#endif
 
         // Renderer and its future GL resources are destroyed before the context is released.
         {
             rendering::OpenGLRenderer renderer;
             renderer.initialize();
+
+#ifdef MCV_ENABLE_PROFILING
+            utils::FpsCounter fpsCounter;
+#endif
 
             for (const auto& renderObjectCreationFunc : renderObjectCreationStorage)
             {
@@ -247,6 +259,9 @@ void GlfwHost::renderLoop(RenderObjectCreationStorage&& renderObjectCreationStor
                 if (!monsterCatVisualizer::utils::SpatialMathUtils::viewportSizeValid(
                     currentSize.width, currentSize.height))
                 {
+#ifdef MCV_ENABLE_PROFILING
+                    fpsCounter.reset();
+#endif
                     std::this_thread::sleep_for(std::chrono::duration<double>(sleepTimeoutSeconds));
                     continue;
                 }
@@ -271,9 +286,17 @@ void GlfwHost::renderLoop(RenderObjectCreationStorage&& renderObjectCreationStor
                     };
                     renderer.render(frame);
                     glfwSwapBuffers(m_window);
+
+#ifdef MCV_ENABLE_PROFILING
+                    fpsCounter.frameRendered();
+#endif
                 }
                 else
                 {
+#ifdef MCV_ENABLE_PROFILING
+                    fpsCounter.reset();
+#endif
+
                     std::this_thread::sleep_for(std::chrono::duration<double>(sleepTimeoutSeconds));
                 }
             }
