@@ -67,11 +67,6 @@ struct AnimationFactory
                 ColorRGBA{170u, 150u, 180u, 0.25f},
                 ColorRGBA{240u, 195u, 250u, 0.65f}
             },
-            // MinMax<ColorRGBA> // color
-            // {
-            //     ColorRGBA{190u, 185u, 200u, 0.4f},
-            //     ColorRGBA{240u, 225u, 250u, 0.9f}
-            // }
             0.6f // themeColorProbability
         };
 
