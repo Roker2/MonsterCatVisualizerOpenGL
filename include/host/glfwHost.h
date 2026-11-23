@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: MIT
+
+#pragma once
+
+#include <atomic>
+#include <exception>
+#include <memory>
+#include <thread>
+
+#include "utils/animationClock.h"
+#include "utils/viewportState.h"
+#include "utils/animationFactory.h"
+#include "animation/animationOrchestrator.h"
+
+struct GLFWwindow;
+
+namespace monsterCatVisualizerOpenGL::host
+{
+
+/**
+ * Owns the GLFW window and a dedicated OpenGL rendering thread.
+ * Construct, run and destroy on the main thread.
+ */
+class GlfwHost
+{
+public:
+    using TaskScheduler = monsterCatVisualizer::utils::TaskScheduler;
+    using TaskSchedulerPtr = std::shared_ptr<TaskScheduler>;
+    using AnimationClock = monsterCatVisualizer::utils::AnimationClock;
+    using AnimationClockPtr = std::shared_ptr<AnimationClock>;
+    using ViewportState = monsterCatVisualizer::utils::ViewportState;
+    using ViewportSize = ViewportState::ViewportSize;
+    using ViewportStatePtr = std::shared_ptr<ViewportState>;
+
+    using AnimationOrchestrator = monsterCatVisualizer::animation::AnimationOrchestrator;
+    using AnimationOrchestratorPtr = std::unique_ptr<AnimationOrchestrator>;
+    using RenderObjectCreationFunc = utils::AnimationFactory::RenderObjectCreationFunc;
+    using RenderObjectCreationStorage = std::vector<RenderObjectCreationFunc>;
+
+    GlfwHost() = default;
+    ~GlfwHost();
+
+    GlfwHost(const GlfwHost&) = delete;
+    GlfwHost& operator=(const GlfwHost&) = delete;
+
+    int run();
+
+private:
+    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+
+    void initializeBasicModels();
+    void deinitializeBasicModels();
+
+    void initializeGLFW();
+    void deinitializeGLFW();
+
+    RenderObjectCreationStorage initializeAnimation();
+    void deinitializeAnimation();
+
+    void initializeRendering(RenderObjectCreationStorage&& renderObjectCreationStorage);
+    void deinitializeRendering();
+
+    void setFramebufferSize(int width, int height);
+    void renderLoop(RenderObjectCreationStorage&& renderObjectCreationStorage) noexcept;
+
+    GLFWwindow* m_window{};
+    bool m_glfwInitialized{};
+    std::thread m_renderThread;
+    std::atomic<bool> m_stop{false};
+    std::exception_ptr m_renderError;
+
+    TaskSchedulerPtr m_taskScheduler;
+    AnimationClockPtr m_animationClock;
+    ViewportStatePtr m_viewportState;
+
+    AnimationOrchestratorPtr m_animationOrchestrator;
+};
+
+} // namespace monsterCatVisualizerOpenGL::host
