@@ -3,7 +3,6 @@
 #include "rendering/particleRenderObject.h"
 
 #include <cstddef>
-#include <stdexcept>
 
 #include "shaders.h"
 #include "utils/mathUtils.h"
@@ -11,30 +10,9 @@
 namespace monsterCatVisualizerOpenGL::rendering
 {
 
-ParticleRenderObject::ParticleRenderObject(StoragePtr storagePtr, float elementsDensity)
-    : BaseRenderObject(elementsDensity),
-    m_containerHandler(storagePtr),
-    m_visualHandler(shaders::particleVertex, shaders::particleFragment)
+ParticleRenderObject::ParticleRenderObject(float elementsDensity, StoragePtr storagePtr)
+    : ContainerRenderObject(shaders::particleVertex, shaders::particleFragment, elementsDensity, storagePtr)
 {
-}
-
-void ParticleRenderObject::synchronize()
-{
-    if (!isInitialized())
-        throw std::logic_error("ParticleRenderObject: not initialized");
-
-    if (!m_containerHandler.synchronize())
-        return;
-
-    m_visualHandler.synchronize(m_containerHandler.getStorageGpu(),
-        m_containerHandler.getLastPatch().modifiedRanges,
-        m_containerHandler.needsFullUpload());
-}
-
-void ParticleRenderObject::clear()
-{
-    m_containerHandler.clear();
-    m_visualHandler.clear();
 }
 
 void ParticleRenderObject::render(const RenderFrameContext& frame)
@@ -54,17 +32,18 @@ void ParticleRenderObject::render(const RenderFrameContext& frame)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_visualHandler.getRenderedCount());
 }
 
-void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
+std::vector<std::string> ParticleRenderObject::getUniformNames()
 {
-    m_containerHandler.initialize(desiredCount);
-
-    const std::vector<std::string> uniformNames
+    return std::vector<std::string>
     {
         uniformTime, uniformViewportRatio, uniformMinRadius
     };
+}
 
+std::vector<utils::VertexAttribute> ParticleRenderObject::getVertexAttributes()
+{
     constexpr GLsizei stride = static_cast<GLsizei>(sizeof(DataModelGpu));
-    const std::vector<utils::VertexAttribute> attributes
+    return std::vector<utils::VertexAttribute>
     {
         {
             0, 2, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startPosition), 1
@@ -94,11 +73,6 @@ void ParticleRenderObject::initializeInternal(std::size_t desiredCount)
             8, 4, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, colorRGBA), 1
         }
     };
-
-    m_visualHandler.initialize(desiredCount,
-        uniformNames,
-        attributes);
-    m_visualHandler.synchronize(m_containerHandler.getStorageGpu());
 }
 
 } // namespace monsterCatVisualizerOpenGL::rendering

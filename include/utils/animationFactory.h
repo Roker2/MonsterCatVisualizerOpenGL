@@ -5,12 +5,15 @@
 #include <functional>
 #include <memory>
 #include <tuple>
+#include <utility>
 
 #include "animation/cloudsAnimator.h"
-#include "rendering/cloudRenderObject.h"
 #include "animation/linesAnimator.h"
-#include "rendering/lineRenderObject.h"
+#include "animation/musicBarsAnimator.h"
 #include "animation/particlesAnimator.h"
+#include "rendering/cloudRenderObject.h"
+#include "rendering/lineRenderObject.h"
+#include "rendering/musicBarRenderObject.h"
 #include "rendering/particleRenderObject.h"
 
 namespace monsterCatVisualizerOpenGL::utils
@@ -24,14 +27,15 @@ struct AnimationFactory
 
     using ColorRGB = monsterCatVisualizer::primitives::ColorRGB<>;
     using ColorRGBA = monsterCatVisualizer::primitives::ColorRGBA<>;
+    using Vector2 = monsterCatVisualizer::primitives::Vector2<>;
 
-    using BaseAnimator = monsterCatVisualizer::animation::BaseAnimator;
-    using BaseAnimatorPtr = std::shared_ptr<BaseAnimator>;
-    using BaseRenderObject = rendering::BaseRenderObject;
-    using BaseRenderObjectPtr = std::unique_ptr<BaseRenderObject>;
+    using IAnimator = monsterCatVisualizer::animation::IAnimator;
+    using IAnimatorPtr = std::shared_ptr<IAnimator>;
+    using IRenderObject = rendering::IRenderObject;
+    using IRenderObjectPtr = std::unique_ptr<IRenderObject>;
 
-    using AnimatorCreationFunc = std::function<BaseAnimatorPtr()>;
-    using RenderObjectCreationFunc = std::function<BaseRenderObjectPtr()>;
+    using AnimatorCreationFunc = std::function<IAnimatorPtr()>;
+    using RenderObjectCreationFunc = std::function<IRenderObjectPtr()>;
 
     template <typename Desc>
     struct AnimationFactoryDescriptor
@@ -126,55 +130,50 @@ struct AnimationFactory
         static constexpr double updateIntervalSeconds = 0.1;
     };
 
-    /**
-     * Creation functions must be invoked exactly once.
-     * @return two functors: create animator, create render object
-     */
-    template <typename Desc, typename Source = decltype(Desc::source)>
-    static auto createDefault(const Source& source = Desc::source)
+    struct MusicBarsDescriptor
     {
-        using FactoryDescriptor = AnimationFactoryDescriptor<Desc>;
-        auto storage = std::make_shared<typename FactoryDescriptor::Storage>();
+        using Animator = monsterCatVisualizer::animation::MusicBarsAnimator;
+        using RenderObject = monsterCatVisualizerOpenGL::rendering::MusicBarRenderObject;
 
-        AnimatorCreationFunc animatorCreationFunc =
-            [storage, source]() mutable
+        static constexpr auto sourceMusicBarsState = monsterCatVisualizer::utils::MusicBarsState::StateDescriptor
         {
-            return std::make_shared<Desc::Animator>(
-                storage, source);
-        };
-        RenderObjectCreationFunc renderObjectCreationFunc =
-            [storage, elementsDensity = source.elementsDensity]()
-        {
-            return std::make_unique<Desc::RenderObject>(
-                storage, elementsDensity);
+            ColorRGBA{190u, 50u, 80u, 1.0f}, // color
+            Vector2{}, // panelCenterOffset
+            Vector2{0.5f, 0.5f}, // panelSize
+            0.7f // elementWidthScale
         };
 
-        return std::make_tuple(animatorCreationFunc, renderObjectCreationFunc);
-    }
+        static constexpr double updateIntervalSeconds = 0.09;
+    };
 
     /**
      * Creation functions must be invoked exactly once.
      * @return two functors: create animator, create render object
      */
-    template <typename Desc, typename Source, typename... Args>
-    static auto create(const Source& source, Args&&... customArgs)
+    template <typename Desc, typename AnimatorTuple, typename RenderObjectTuple>
+    static auto create(AnimatorTuple&& animatorTuple, RenderObjectTuple&& renderObjectTuple)
     {
         using FactoryDescriptor = AnimationFactoryDescriptor<Desc>;
         auto storage = std::make_shared<typename FactoryDescriptor::Storage>();
 
         AnimatorCreationFunc animatorCreationFunc =
-            [customArgs..., storage, source]() mutable
+            [animatorTuple = std::forward<AnimatorTuple>(animatorTuple), storage]() mutable
         {
-            return std::make_shared<Desc::Animator>(
-                std::forward<Args>(customArgs)...,
-                storage, source);
+            return std::apply([&](auto&&... items)
+            {
+                return std::make_shared<Desc::Animator>(
+                    std::move(items)..., std::move(storage));
+            }, std::move(animatorTuple));
         };
+
         RenderObjectCreationFunc renderObjectCreationFunc =
-            [customArgs..., storage, elementsDensity = source.elementsDensity]() mutable
+            [renderObjectTuple = std::forward<RenderObjectTuple>(renderObjectTuple), storage]() mutable
         {
-            return std::make_unique<Desc::RenderObject>(
-                std::forward<Args>(customArgs)...,
-                storage, elementsDensity);
+            return std::apply([&](auto&&... items)
+            {
+                return std::make_unique<Desc::RenderObject>(
+                    std::move(items)..., std::move(storage));
+            }, std::move(renderObjectTuple));
         };
 
         return std::make_tuple(animatorCreationFunc, renderObjectCreationFunc);

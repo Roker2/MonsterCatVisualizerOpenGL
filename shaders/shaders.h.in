@@ -14,4 +14,7 @@ inline constexpr char lineFragment[] = R"GLSL(@LINE_FRAG@)GLSL";
 inline constexpr char particleVertex[] = R"GLSL(@PARTICLE_VERT@)GLSL";
 inline constexpr char particleFragment[] = R"GLSL(@PARTICLE_FRAG@)GLSL";
 
+inline constexpr char musicBarVertex[] = R"GLSL(@MUSICBAR_VERT@)GLSL";
+inline constexpr char musicBarFragment[] = R"GLSL(@MUSICBAR_FRAG@)GLSL";
+
 } // namespace monsterCatVisualizerOpenGL::shaders

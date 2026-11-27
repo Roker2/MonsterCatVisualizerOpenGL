@@ -53,6 +53,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${SHADER_DIR}/line.frag"
     "${SHADER_DIR}/particle.vert"
     "${SHADER_DIR}/particle.frag"
+    "${SHADER_DIR}/musicBar.vert"
+    "${SHADER_DIR}/musicBar.frag"
 )
 
 file(READ "${SHADER_DIR}/cloud.vert" CLOUD_VERT)
@@ -61,6 +63,8 @@ file(READ "${SHADER_DIR}/line.vert" LINE_VERT)
 file(READ "${SHADER_DIR}/line.frag" LINE_FRAG)
 file(READ "${SHADER_DIR}/particle.vert" PARTICLE_VERT)
 file(READ "${SHADER_DIR}/particle.frag" PARTICLE_FRAG)
+file(READ "${SHADER_DIR}/musicBar.vert" MUSICBAR_VERT)
+file(READ "${SHADER_DIR}/musicBar.frag" MUSICBAR_FRAG)
 
 configure_file(
     "${SHADER_DIR}/shaders.h.in"

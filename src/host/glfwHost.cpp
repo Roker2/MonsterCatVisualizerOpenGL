@@ -32,28 +32,20 @@ void errorCallback(int error, const char* description)
     std::cerr << "GLFW error: " << error << ": " << description << std::endl;
 }
 
-template <typename Desc, typename AnimationOrchestrator, typename RenderObjectCreationStorage>
-void createDefault(AnimationOrchestrator& animationOrchestrator,
-    RenderObjectCreationStorage& renderObjectCreationStorage)
-{
-    using AnimationFactory = monsterCatVisualizerOpenGL::utils::AnimationFactory;
-
-    auto [animatorCreationFunc, renderObjectCreationFunc] =
-        AnimationFactory::createDefault<Desc>();
-
-    animationOrchestrator.addAnimator(animatorCreationFunc(), Desc::updateIntervalSeconds);
-    renderObjectCreationStorage.emplace_back(std::move(renderObjectCreationFunc));
-}
-
-template <typename Desc, typename AnimationOrchestrator, typename RenderObjectCreationStorage, typename... Args>
+template <typename Desc,
+    typename AnimationOrchestrator, typename RenderObjectCreationStorage,
+    typename AnimatorTuple, typename RenderObjectTuple>
 void create(AnimationOrchestrator& animationOrchestrator,
     RenderObjectCreationStorage& renderObjectCreationStorage,
-    Args&&... customArgs)
+    AnimatorTuple&& animatorTuple,
+    RenderObjectTuple&& renderObjectTuple)
 {
     using AnimationFactory = monsterCatVisualizerOpenGL::utils::AnimationFactory;
 
     auto [animatorCreationFunc, renderObjectCreationFunc] =
-        AnimationFactory::create<Desc>(Desc::source, std::forward<Args>(customArgs)...);
+        AnimationFactory::create<Desc>(
+            std::forward<AnimatorTuple>(animatorTuple),
+            std::forward<RenderObjectTuple>(renderObjectTuple));
 
     animationOrchestrator.addAnimator(animatorCreationFunc(), Desc::updateIntervalSeconds);
     renderObjectCreationStorage.emplace_back(std::move(renderObjectCreationFunc));
@@ -158,6 +150,11 @@ void GlfwHost::deinitializeGLFW()
 
 GlfwHost::RenderObjectCreationStorage GlfwHost::initializeAnimation()
 {
+    using CloudsDescriptor = utils::AnimationFactory::CloudsDescriptor;
+    using LinesDescriptor = utils::AnimationFactory::LinesDescriptor;
+    using ParticlesDescriptor = utils::AnimationFactory::ParticlesDescriptor;
+    using MusicBarsDescriptor = utils::AnimationFactory::MusicBarsDescriptor;
+
     m_animationOrchestrator = std::make_unique<AnimationOrchestrator>(
         m_taskScheduler, m_animationClock, m_viewportState);
 
@@ -165,13 +162,26 @@ GlfwHost::RenderObjectCreationStorage GlfwHost::initializeAnimation()
 
     auto themeColorState = std::make_shared<monsterCatVisualizer::utils::ThemeColorState>();
     themeColorState->setColor(defaultCloudThemeColor);
-    create<utils::AnimationFactory::CloudsDescriptor>(
-        *m_animationOrchestrator, renderObjectCreationStorage, std::move(themeColorState));
+    create<CloudsDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage,
+        std::make_tuple(themeColorState, CloudsDescriptor::source),
+        std::make_tuple(themeColorState, CloudsDescriptor::source.elementsDensity));
 
-    createDefault<utils::AnimationFactory::LinesDescriptor>(
-        *m_animationOrchestrator, renderObjectCreationStorage);
-    createDefault<utils::AnimationFactory::ParticlesDescriptor>(
-        *m_animationOrchestrator, renderObjectCreationStorage);
+    create<LinesDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage,
+        std::make_tuple(LinesDescriptor::source),
+        std::make_tuple(LinesDescriptor::source.elementsDensity));
+    create<ParticlesDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage,
+        std::make_tuple(ParticlesDescriptor::source),
+        std::make_tuple(ParticlesDescriptor::source.elementsDensity));
+
+    auto musicBarsState = std::make_shared<monsterCatVisualizer::utils::MusicBarsState>();
+    musicBarsState->set(MusicBarsDescriptor::sourceMusicBarsState);
+    create<MusicBarsDescriptor>(
+        *m_animationOrchestrator, renderObjectCreationStorage,
+        std::make_tuple(musicBarsState),
+        std::make_tuple(musicBarsState));
 
     return renderObjectCreationStorage;
 }

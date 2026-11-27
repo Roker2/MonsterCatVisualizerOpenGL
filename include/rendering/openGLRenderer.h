@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "rendering/baseRenderObject.h"
+#include "rendering/iRenderObject.h"
 
 namespace monsterCatVisualizerOpenGL::rendering
 {
@@ -26,12 +26,12 @@ public:
     void render(const RenderFrameContext& frame);
 
     /** Takes ownership and initializes the object on the render thread. */
-    void addRenderObject(std::unique_ptr<BaseRenderObject>&& renderObject);
+    void addRenderObject(std::unique_ptr<IRenderObject>&& renderObject);
 
     void removeAllRenderObjects();
 
 private:
-    std::vector<std::unique_ptr<BaseRenderObject>> m_renderObjects;
+    std::vector<std::unique_ptr<IRenderObject>> m_renderObjects;
 };
 
 } // namespace monsterCatVisualizerOpenGL::rendering

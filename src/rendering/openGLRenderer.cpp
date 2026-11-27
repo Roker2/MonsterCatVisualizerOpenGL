@@ -9,8 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "rendering/particleRenderObject.h"
-
 namespace monsterCatVisualizerOpenGL::rendering
 {
 
@@ -43,7 +41,7 @@ void OpenGLRenderer::render(const RenderFrameContext& frame)
     }
 }
 
-void OpenGLRenderer::addRenderObject(std::unique_ptr<BaseRenderObject>&& renderObject)
+void OpenGLRenderer::addRenderObject(std::unique_ptr<IRenderObject>&& renderObject)
 {
     if (!renderObject)
         throw std::invalid_argument("OpenGLRenderer: empty render object");

@@ -11,12 +11,10 @@ namespace monsterCatVisualizerOpenGL::rendering
 {
 
 CloudRenderObject::CloudRenderObject(ThemeColorStatePtr themeColorState,
-    StoragePtr storagePtr,
-    float elementsDensity)
-    : BaseRenderObject(elementsDensity),
-    m_themeColorState(std::move(themeColorState)),
-    m_containerHandler(storagePtr),
-    m_visualHandler(shaders::cloudVertex, shaders::cloudFragment)
+    float elementsDensity,
+    StoragePtr storagePtr)
+    : ContainerRenderObject(shaders::cloudVertex, shaders::cloudFragment, elementsDensity, storagePtr),
+    m_themeColorState(std::move(themeColorState))
 {
     if (!m_themeColorState)
         throw std::runtime_error("CloudRenderObject: empty themeColorState");
@@ -25,25 +23,6 @@ CloudRenderObject::CloudRenderObject(ThemeColorStatePtr themeColorState,
 CloudRenderObject::ThemeColorStatePtr CloudRenderObject::getThemeColorState() const
 {
     return m_themeColorState;
-}
-
-void CloudRenderObject::synchronize()
-{
-    if (!isInitialized())
-        throw std::logic_error("CloudRenderObject: not initialized");
-
-    if (!m_containerHandler.synchronize())
-        return;
-
-    m_visualHandler.synchronize(m_containerHandler.getStorageGpu(),
-        m_containerHandler.getLastPatch().modifiedRanges,
-        m_containerHandler.needsFullUpload());
-}
-
-void CloudRenderObject::clear()
-{
-    m_containerHandler.clear();
-    m_visualHandler.clear();
 }
 
 void CloudRenderObject::render(const RenderFrameContext& frame)
@@ -59,17 +38,18 @@ void CloudRenderObject::render(const RenderFrameContext& frame)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, m_visualHandler.getRenderedCount());
 }
 
-void CloudRenderObject::initializeInternal(std::size_t desiredCount)
+std::vector<std::string> CloudRenderObject::getUniformNames()
 {
-    m_containerHandler.initialize(desiredCount);
-
-    const std::vector<std::string> uniformNames
+    return std::vector<std::string>
     {
         uniformTime, uniformViewportRatio, uniformThemeColor
     };
+}
 
+std::vector<utils::VertexAttribute> CloudRenderObject::getVertexAttributes()
+{
     constexpr GLsizei stride = static_cast<GLsizei>(sizeof(DataModelGpu));
-    const std::vector<utils::VertexAttribute> attributes
+    return std::vector<utils::VertexAttribute>
     {
         {
             0, 2, GL_FLOAT, GL_FALSE, stride, offsetof(DataModelGpu, startPosition), 1
@@ -102,11 +82,6 @@ void CloudRenderObject::initializeInternal(std::size_t desiredCount)
             9, 1, GL_INT, GL_FALSE, stride, offsetof(DataModelGpu, isThemeColored), 1, utils::VertexAttributeKind::Integer
         }
     };
-
-    m_visualHandler.initialize(desiredCount,
-        uniformNames,
-        attributes);
-    m_visualHandler.synchronize(m_containerHandler.getStorageGpu());
 }
 
 } // namespace monsterCatVisualizerOpenGL::rendering
