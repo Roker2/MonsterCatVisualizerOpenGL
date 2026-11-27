@@ -161,8 +161,8 @@ struct AnimationFactory
         {
             return std::apply([&](auto&&... items)
             {
-                return std::make_shared<Desc::Animator>(
-                    std::move(items)..., std::move(storage));
+                return std::make_shared<typename Desc::Animator>(
+                    std::forward<decltype(items)>(items)..., std::move(storage));
             }, std::move(animatorTuple));
         };
 
@@ -171,12 +171,14 @@ struct AnimationFactory
         {
             return std::apply([&](auto&&... items)
             {
-                return std::make_unique<Desc::RenderObject>(
-                    std::move(items)..., std::move(storage));
+                return std::make_unique<typename Desc::RenderObject>(
+                    std::forward<decltype(items)>(items)..., std::move(storage));
             }, std::move(renderObjectTuple));
         };
 
-        return std::make_tuple(animatorCreationFunc, renderObjectCreationFunc);
+        return std::make_tuple(
+            std::move(animatorCreationFunc),
+            std::move(renderObjectCreationFunc));
     }
 };
 

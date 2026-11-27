@@ -19,7 +19,7 @@ MusicBarRenderObject::MusicBarRenderObject(MusicBarsStatePtr musicBarsState,
     if (!m_musicBarsState)
         throw std::runtime_error("MusicBarRenderObject: empty musicBarsState");
     if (!m_storagePtr)
-        throw std::runtime_error("CloudRenderObject: empty storage");
+        throw std::runtime_error("MusicBarRenderObject: empty storage");
 }
 
 MusicBarRenderObject::MusicBarsStatePtr MusicBarRenderObject::getMusicBarsState() const
