@@ -1,10 +1,16 @@
 # Copyright (c) 2026 Dzmitry Minko
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
 project(MonsterCatVisualizerOpenGL)
 set(CMAKE_CXX_STANDARD 17)
+
+set(BUILD_SHARED_LIBS OFF)
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY
+    "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+)
 
 include(FetchContent)
 
@@ -13,6 +19,11 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/Roker2/MonsterCatVisualizerBase.git
 )
 FetchContent_MakeAvailable(MonsterCatVisualizerBase)
+
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
+set(GLFW_BUILD_DOCS OFF)
+set(GLFW_INSTALL OFF)
 
 FetchContent_Declare(
   glfw
@@ -26,7 +37,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_executable(MonsterCatVisualizerOpenGL ${SOURCES})
+add_library(MonsterCatVisualizerOpenGL STATIC ${SOURCES})
 
 option(MCV_ENABLE_PROFILING "Enable FPS profiling" OFF)
 
@@ -34,7 +45,7 @@ if(MCV_ENABLE_PROFILING)
     target_compile_definitions(MonsterCatVisualizerOpenGL PRIVATE MCV_ENABLE_PROFILING)
 endif()
 
-target_include_directories(MonsterCatVisualizerOpenGL PRIVATE include)
+target_include_directories(MonsterCatVisualizerOpenGL PUBLIC include)
 
 find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
@@ -42,7 +53,16 @@ find_package(Threads REQUIRED)
 add_library(glad STATIC external/glad/src/gl.c)
 target_include_directories(glad PUBLIC external/glad/include)
 
-target_link_libraries(MonsterCatVisualizerOpenGL PRIVATE MonsterCatVisualizerBase glad glfw OpenGL::GL Threads::Threads)
+target_link_libraries(MonsterCatVisualizerOpenGL
+    PUBLIC
+        MonsterCatVisualizerBase
+        glad
+    PRIVATE
+        glfw
+        OpenGL::GL
+        Threads::Threads
+)
+
 # Embed GLSL sources into a generated C++ header.
 set(SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 
@@ -75,3 +95,5 @@ configure_file(
 target_include_directories(MonsterCatVisualizerOpenGL PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated"
 )
+
+add_subdirectory(targets/standalone)
